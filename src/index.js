@@ -9,6 +9,8 @@ const  GAME_HEIGHT = 600
 let game = new Game(GAME_WIDTH, GAME_HEIGHT)
 game.start()
 
+
+
 let lastTime = 0
 
 function gameLoop(timeStamp) {
@@ -17,8 +19,19 @@ function gameLoop(timeStamp) {
 
     ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT)
 
-    game.update(deltaTime)
+    //Pruebas
+    /* ctx.beginPath()
+    ctx.arc(600, 300, 30 / Math.sin(Math.PI / 4), Math.PI / 4, -(Math.PI / 4), true)
+    ctx.fillStyle = '#fff'
+    ctx.strokeStyle = "black"
+    ctx.stroke()
+    ctx.closePath() */
+    
+    /* game.update(deltaTime) */
     game.draw(ctx)
+    /* ctx.beginPath() */
+
+    
 
     requestAnimationFrame(gameLoop)
 }

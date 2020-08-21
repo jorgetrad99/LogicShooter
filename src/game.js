@@ -1,4 +1,5 @@
-import And_Logic_Gate from './logic_gate.js'
+import Logic_Gate from "./logic_gate.js"
+
 
 export default class Game {
     constructor(gameWidth, gameHeight) {
@@ -11,17 +12,22 @@ export default class Game {
         this.ball = new Ball(this)
         new InputHandler(this.paddle) */
 
-        this.gate = new And_Logic_Gate(this, 200, 100)
+        this.and_gate = new Logic_Gate(this, 200, 100, 0)
+        this.or_gate = new Logic_Gate(this, 200, 200, 1)
+        this.or_gate1 = new Logic_Gate(this, 500, 400, 1)
 
 
-        this.gameObjects = [ this.gate ]
+        this.gameObjects = [ this.and_gate, this.or_gate, this.or_gate1 ]
     }
 
-    update(deltaTime) {
+    /* update(deltaTime) {
         this.gameObjects.forEach((object) => object.update(deltaTime))
-    }
+    } */
 
     draw(ctx) {
-        this.gate.draw(ctx)   
+        
+        /* this.paddle.draw(ctx)
+        this.ball.draw(ctx) */
+        this.gameObjects.forEach(object => object.draw(ctx))
     }
 }
