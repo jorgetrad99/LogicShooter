@@ -4,7 +4,7 @@ let cnvs = document.getElementById("gameScreen")  //canvas
 let ctx = cnvs.getContext("2d")            //context
 
 const GAME_WIDTH = 800
-const  GAME_HEIGHT = 600
+const GAME_HEIGHT = 600
 
 let game = new Game(GAME_WIDTH, GAME_HEIGHT)
 game.start()
@@ -27,7 +27,7 @@ function gameLoop(timeStamp) {
     ctx.stroke()
     ctx.closePath() */
     
-    /* game.update(deltaTime) */
+    game.update(deltaTime)
     game.draw(ctx)
     /* ctx.beginPath() */
 
