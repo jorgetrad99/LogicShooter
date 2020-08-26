@@ -1,0 +1,24 @@
+{
+  "name": "logic-shooter",
+  "version": "1.0.0",
+  "description": "A logic based, arcade old-school shooter.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start:dev": "webpack-dev-server --config ./webpack.config.js",
+    "start:build": "webpack --config ./webpack-build.config.js"
+
+  },
+  "keywords": [
+    "js13k"
+  ],
+  "author": "@Mindsetfps",
+  "license": "ISC",
+  "dependencies": {},
+  "devDependencies": {
+    "html-webpack-plugin": "^4.3.0",
+    "webpack": "^4.44.1",
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.0"
+  }
+}
