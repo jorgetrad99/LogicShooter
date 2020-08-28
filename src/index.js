@@ -1,58 +1,84 @@
 import { init, Sprite, GameLoop, getContext } from 'kontra';
 import LogicGate, { Enemies } from "./drawings.js"
+import EnergyBar, {LifeBar} from './Bars.js'
 
 let { canvas } = init();
 
 let ctx = getContext('2d');
 
-/* let sprite = Sprite({
-  x: 100,        // starting x,y position of the sprite
-  y: 80,
-  color: 'red',  // fill color of the sprite rectangle
-  width: 20,     // width and height of the sprite rectangle
-  height: 40,
-  dx: 2          // move the sprite 2px to the right every frame
-}); */
+
+const X_POSITION_INIT = 400
+const Y_POSITION_INIT = 500
 
 let and = new LogicGate({
-    x: 300,
-    y: 100
+    x: 200,
+    y: 300
 }, 0)
 
 let or = new LogicGate({
-    x: 200,
-    y: 150
+    x: 100,
+    y: 300
 }, 1)
 
+let enemie = new Enemies({
+    x: 100,
+    y: 200
+}, 1)
 
-var gameObjects = [ and, or ]
+let bar = new EnergyBar(document.querySelector('.energy-bar'), 75)
+let bar2 = new LifeBar(document.querySelector('.life-bar'), 56)
 
+var gameObjects = [ and, or, enemie ]
+
+
+
+/****** FUNCTIONS *///////////
+function circuito() {
+    //Circulito
+    ctx.beginPath()
+    /* this.ctx.arc() */
+    ctx.arc(X_POSITION_INIT, Y_POSITION_INIT, 3, 0, Math.PI * 2, true)
+    ctx.fillStyle = "white"
+    ctx.closePath()
+    ctx.fill()
+}
+
+
+
+
+
+/* or.rotation = Math.PI / 2 */
 
 //Game Loop//
-let loop = GameLoop({  // create the main game loop
+let loop = GameLoop({
+  // create the main game loop
     
   update: function() { // update the game state
     /* sprite.update(); */
 
     
-    or.update()
-    and.update()
+    /* or.update()
+    and.update() */
 
     gameObjects.forEach((object) => object.update())
-    // wrap the sprites position when it reaches
-    // the edge of the screen
-    /* if (sprite.x > canvas.width) {
-      sprite.x = -sprite.width;
-    } */
+    
+      
+      
+      
   },
   render: function() { // render the game state
     /* or.render() */
     /* sprite.render(); */
-    or.render()
-    and.render()
+    /* or.render()
+    and.render() */
 
     gameObjects.forEach((object) => object.render())
+    circuito()
+    
   }
+
+
+  
 });
 
 
