@@ -7,14 +7,15 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start:dev": "webpack-dev-server --config ./webpack.config.js",
     "start:build": "webpack --config ./webpack-build.config.js"
-
   },
   "keywords": [
     "js13k"
   ],
   "author": "@Mindsetfps",
   "license": "ISC",
-  "dependencies": {},
+  "dependencies": {
+    "kontra": "^7.1.2"
+  },
   "devDependencies": {
     "html-webpack-plugin": "^4.3.0",
     "webpack": "^4.44.1",
