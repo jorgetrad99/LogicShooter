@@ -18,10 +18,15 @@ let and = new LogicGate({
     y: 0
 }, 1) */
 
+let enemie = new Enemies({
+  x: 100,
+  y: 100
+}, 1)
+
 let bar = new EnergyBar(document.querySelector('.energy-bar'), 100)
 let bar2 = new LifeBar(document.querySelector('.life-bar'), 85) 
 
-var gameObjects = [ and ]
+var gameObjects = [ and, enemie ]
 
 /****** FUNCTIONS *///////////
 function circuito() {
@@ -63,7 +68,7 @@ let loop = GameLoop({  // create the main game loop
     gameObjects.forEach((object) => object.render())
     circuito()
   },
-  fps: 1
+  fps: 5
 });
 
 
