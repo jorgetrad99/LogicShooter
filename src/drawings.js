@@ -7,6 +7,7 @@ export default class LogicGate extends GameObject.class{
         this.type = type
         this.ctx = this.context
         this.r = 20
+        this.angle = 0
     }
 
     draw () {
@@ -15,11 +16,18 @@ export default class LogicGate extends GameObject.class{
 
         this.ctx.lineWidth = 3
         
+        this.ctx.translate(400, 400)
+        
+        /* this.ctx.angleMode(DEGREES) */
+        this.ctx.rotate(Math.PI)
+        /* this.ctx.rotate(Math.PI) */
+        
         this.ctx.beginPath()
-
+        
         //And
         if(this.type === 0) {
             //Semicircle
+            
             this.ctx.arc(this.x, this.y, this.r, Math.PI / 2, Math.PI * 3 / 2, true)
             this.ctx.fill()
 
@@ -50,12 +58,7 @@ export default class LogicGate extends GameObject.class{
             this.ctx.lineTo(this.x + this.r * 2, this.y)
             this.ctx.stroke()   
             
-            //Circulito
-            /* this.ctx.beginPath()
-            this.ctx.arc(this.x, this.y, 3, 0, Math.PI * 2, true)
-            this.ctx.fillStyle = "white"
-            /* this.ctx.closePath()
-            this.ctx.fill() */
+            
 
         }  
         //Or
@@ -100,5 +103,10 @@ export default class LogicGate extends GameObject.class{
                 this.ctx.closePath() 
                 this.ctx.fill() */
         }
+    }
+
+    rot(){
+        this.ctx.rotate(this.angle)
+        this.angle++
     }
 }    

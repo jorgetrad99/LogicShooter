@@ -1,31 +1,39 @@
 import { init, Sprite, GameLoop, getContext } from 'kontra';
 import LogicGate, { Enemies } from "./drawings.js"
+import EnergyBar, {LifeBar} from './Bars.js'
 
 let { canvas } = init();
 
 let ctx = getContext('2d');
 
-/* let sprite = Sprite({
-  x: 100,        // starting x,y position of the sprite
-  y: 80,
-  color: 'red',  // fill color of the sprite rectangle
-  width: 20,     // width and height of the sprite rectangle
-  height: 40,
-  dx: 2          // move the sprite 2px to the right every frame
-}); */
+const CENTER = 400
 
 let and = new LogicGate({
-    x: 300,
-    y: 100
+    x: 250,
+    y: 0
 }, 0)
 
-let or = new LogicGate({
-    x: 200,
-    y: 150
-}, 1)
+/* let or = new LogicGate({
+    x: 150,
+    y: 0
+}, 1) */
 
+let bar = new EnergyBar(document.querySelector('.energy-bar'), 100)
+let bar2 = new LifeBar(document.querySelector('.life-bar'), 85) 
 
-var gameObjects = [ and, or ]
+var gameObjects = [ and ]
+
+/****** FUNCTIONS *///////////
+function circuito() {
+  //Circulito
+  ctx.beginPath()
+  /* this.ctx.arc() */
+  ctx.arc(CENTER, CENTER, 3, 0, Math.PI * 2, true)
+  ctx.fillStyle = "white"
+  ctx.closePath()
+  ctx.fill()
+}
+
 
 
 //Game Loop//
@@ -33,10 +41,11 @@ let loop = GameLoop({  // create the main game loop
     
   update: function() { // update the game state
     /* sprite.update(); */
-
     
-    or.update()
-    and.update()
+    bar.update()
+    bar2.update()
+    /* and.rot() */
+    /* console.log(and.angle) */
 
     gameObjects.forEach((object) => object.update())
     // wrap the sprites position when it reaches
@@ -48,11 +57,13 @@ let loop = GameLoop({  // create the main game loop
   render: function() { // render the game state
     /* or.render() */
     /* sprite.render(); */
-    or.render()
-    and.render()
+
+   
 
     gameObjects.forEach((object) => object.render())
-  }
+    circuito()
+  },
+  fps: 1
 });
 
 
