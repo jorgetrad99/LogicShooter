@@ -1,61 +1,78 @@
-import { init, Sprite, GameLoop, getContext } from 'kontra';
+import { init, Sprite, GameLoop, getContext, keyPressed, initKeys, radToDeg, degToRad,  } from 'kontra';
 import LogicGate, { Enemies } from "./drawings.js"
 
 let { canvas } = init();
+let radians = degToRad(180)
+
+initKeys();
 
 let ctx = getContext('2d');
 
-/* let sprite = Sprite({
-  x: 100,        // starting x,y position of the sprite
-  y: 80,
-  color: 'red',  // fill color of the sprite rectangle
-  width: 20,     // width and height of the sprite rectangle
-  height: 40,
-  dx: 2          // move the sprite 2px to the right every frame
-}); */
+let custom = Sprite({
+  x: 250,
+  y: 250,
+  color: 'red',
+  radius: 50,
 
-let and = new LogicGate({
-    x: 300,
-    y: 100
-}, 0)
-
-let or = new LogicGate({
-    x: 200,
-    y: 150
-}, 1)
-
-
-var gameObjects = [ and, or ]
-
-
-//Game Loop//
-let loop = GameLoop({  // create the main game loop
+  render: function() {
     
-  update: function() { // update the game state
-    /* sprite.update(); */
+    let x = 10;
+    let y = 10;
 
-    
-    or.update()
-    and.update()
+    this.context.fillStyle = this.color;
 
-    gameObjects.forEach((object) => object.update())
-    // wrap the sprites position when it reaches
-    // the edge of the screen
-    /* if (sprite.x > canvas.width) {
-      sprite.x = -sprite.width;
-    } */
+    this.context.arc(x, y, this.radius, Math.PI / 2, Math.PI * 3 / 2, true)
+    this.context.fill()
+
+    //Rectangle
+    this.context.moveTo(x,y -  this.radius)
+    this.context.lineTo(x - this.radius, y - this.radius)
+    this.context.lineTo(x - this.radius, y + this.radius)
+    this.context.lineTo(x, y + this.radius)
+    this.context.fill()
+    this.context.stroke()
+
+    //Patita superior trasera
+    this.context.beginPath()
+    this.context.moveTo(x - this.radius, y - this.radius + this.radius / 2)
+    this.context.lineTo(x - this.radius * 2, y - this.radius + this.radius / 2)
+    this.context.stroke()
+
+    //Patita inferior trasera
+    this.context.beginPath()
+    this.context.moveTo(x - this.radius, y + this.radius / 2)
+    this.context.lineTo(x - this.radius * 2, y + this.radius / 2)
+    this.context.stroke()
+
+    //Patita delantera
+    this.context.beginPath()
+    this.context.moveTo(x + this.r, y)
+    this.context.lineTo(x + this.r * 2, y)
+    this.context.stroke()  
+
+    //this.context.restore()
   },
-  render: function() { // render the game state
-    /* or.render() */
-    /* sprite.render(); */
-    or.render()
-    and.render()
+  update(){
+    if (keyPressed('left')) {
+      this.rotation += degToRad(-4);
+    }
+    else if (keyPressed('right')) {
+      this.rotation += degToRad(4);
+    }
+  }
 
-    gameObjects.forEach((object) => object.render())
+})
+
+let loop = GameLoop({ 
+  update: function() {
+    custom.update()
+  },
+  render: function(){
+    custom.render();
+    custom.scaleX = 0.5
+    custom.scaleY = 0.5
+
   }
 });
 
-
-
-// start the game//
 loop.start();    
