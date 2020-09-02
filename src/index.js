@@ -1,17 +1,19 @@
-import { init, Sprite, GameLoop, getContext } from 'kontra';
+import { init, Sprite, initKeys, keyPressed, GameLoop, getContext } from 'kontra';
 import EnergyBar, {LifeBar} from './Bars.js'
 
 let { canvas } = init();
+
+initKeys();
 
 const CENTER = 400
 
 let ctx = getContext("2d")
 
 let bar = new EnergyBar(document.querySelector('.energy-bar'), 100)
-let bar2 = new LifeBar(document.querySelector('.life-bar'), 85) 
+let bar2 = new LifeBar(document.querySelector('.life-bar'), 100) 
 
 let and = new logicGate(-350, 0, 0, 0)
-let or = new logicGate(-350, 0,  90, 1)
+let or = new logicGate(-350, 0,  toRad(90), 1)
 var gameObjects = [ and, or, bar, bar2 ]
 
 
@@ -137,8 +139,14 @@ let loop = GameLoop({  // create the main game loop
   update: function() { // update the game state
     /* sprite.update(); */
     gameObjects.forEach((object) => object.update())
-    and.angle += 1 * Math.PI / 180; 
-    or.angle += 1 * Math.PI / 180; 
+    if(keyPressed('right')){
+      and.angle += toRad(1)
+      or.angle += toRad(1)
+    }
+    if(keyPressed('left')){
+      and.angle -= toRad(1)
+      or.angle -= toRad(1)
+    }
   },
   render: function() { // render the game state
 
