@@ -84,13 +84,29 @@
     #gameScreen {
         border: 5px solid white;
         border-top: none;
+        border-bottom: none;
         background-color: rgb(163, 157, 157);
         padding-left: 0; 
         padding-right: 0; 
         margin-left: auto; 
         margin-right: auto; 
         display: block; 
-} 
+    }
+
+    .bottom {
+        width: 800px;
+        height: 200px;
+        border: 5px solid white;
+        /* border-top: none; */
+        background-color: rgb(163, 157, 157);
+        padding-left: 0; 
+        padding-right: 0; 
+        margin-left: auto; 
+        margin-right: auto; 
+        display: flex;
+        align-items: center;
+        justify-content: center; 
+    } 
 </style>
 <body>
     <div class="top">
@@ -104,5 +120,8 @@
         </div>
     </div>
     <canvas id="gameScreen" width=800 height=800></canvas>
+    <div class="bottom">
+        
+    </div>
 </body>
 </html>

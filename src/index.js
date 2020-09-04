@@ -255,6 +255,8 @@ let loop = GameLoop({  // create the main game loop
           count += 1 / 60
         }
       })  
+    } else {
+      count -= 1 / 60 / 2
     }
 
     energy_bar.setValue(energy_bar.value - count)
