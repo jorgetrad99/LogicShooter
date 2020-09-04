@@ -19,7 +19,7 @@ export default class EnergyBar {
     }
 
     update(){
-        const percentage = this.value + '%'
+        const percentage = Math.round(this.value) + '%'
         this.fillElem.style.width = percentage
         this.valueElem.textContent = percentage
     }

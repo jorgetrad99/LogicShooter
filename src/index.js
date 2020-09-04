@@ -7,14 +7,29 @@ initKeys();
 
 const CENTER = 400
 
+const GAME_STATE = {
+  PAUSED: 0,
+  RUNNING: 1,
+  MENU: 2,
+  GAME_OVER: 3,
+  NEW_LEVEL: 4
+}
+
+const LOGIC_GATE = {
+  AND: 0,
+  OR: 1
+}
+
 let ctx = getContext("2d")
 
-let bar = new EnergyBar(document.querySelector('.energy-bar'), 100)
-let bar2 = new LifeBar(document.querySelector('.life-bar'), 100) 
+let energy_bar = new EnergyBar(document.querySelector('.energy-bar'), 100)
+let life_bar = new LifeBar(document.querySelector('.life-bar'), 100) 
 
-let and = new logicGate(-350, 0, 0, "rgba(0, 255, 0, .3)", "rgba(0, 0, 255, .3)", 0)
-let or = new logicGate(-350, 0, toRad(90), "rgba(0, 0, 255, .3)", "rgba(0, 255, 0, .3)", 1)
-var gameObjects = [ and, or, bar, bar2 ]
+let and = new logicGate(-350, 0, 0, "rgba(0, 0, 255, .3)", "rgba(0, 255, 0, .3)", LOGIC_GATE.AND)
+let or = new logicGate(-350, 0, toRad(90), "rgba(0, 255, 0, .3)", "rgba(0, 0, 255, .3)", LOGIC_GATE.OR)
+var gameObjects = [ and, or, energy_bar, life_bar ]
+
+var logic_gates = [ and, or ]
 
 
 
@@ -173,33 +188,38 @@ function logicGate(x, y, angle, colorSup, colorInf, type){
 
 
 
-let band = false
-let band2 = false
+let a_input = false
+let s_input = false
+
+let count = 0
 
 function keyDown(evt) {
   if(evt.keyCode == 65){
-    if(band === false){
+    if(a_input === false){
       and.colorSup = "rgba(0, 0, 255, 1)"
       or.colorInf = "rgba(0, 0, 255, 1)"
-      band = true
+      a_input = true
     } else {
       and.colorSup = "rgba(0, 0, 255, .3)"
       or.colorInf = "rgba(0, 0, 255, .3)"
-      band = false
+      a_input = false
     }
   }
 
   if(evt.keyCode == 83){
-    if(band2 === false){
+    if(s_input === false){
       and.colorInf = "rgba(0, 255, 0, 1)"
       or.colorSup = "rgba(0, 255, 0, 1)"
-      band2 = true
+      s_input = true
     } else {
       and.colorInf = "rgba(0, 255, 0, .3)"
       or.colorSup = "rgba(0, 255, 0, .3)"
-      band2 = false
+      s_input = false
     }
   }
+
+
+  
 }
 
 
@@ -217,6 +237,28 @@ let loop = GameLoop({  // create the main game loop
       and.angle -= toRad(1)
       or.angle -= toRad(1)
     }
+
+
+    if( a_input === true && s_input === true){
+      logic_gates.forEach((object) => {
+        if(object.type === 0) {   //And
+          count += 3 / 60
+        } else if(object.type === 1){   //Or
+          count += 1 / 60
+        }
+      })
+      
+      
+    } else if (a_input === true || s_input === true) {
+      logic_gates.forEach((object) => {
+        if(object.type === 1){   //Or
+          count += 1 / 60
+        }
+      })  
+    }
+
+    energy_bar.setValue(energy_bar.value - count)
+    count = 0
 
     document.addEventListener('keydown', keyDown)
     /* if(){
