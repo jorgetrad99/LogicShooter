@@ -22,6 +22,12 @@ const LOGIC_GATE = {
 
 let ctx = getContext("2d")
 
+let left_arrow_button = document.getElementById('left-arrow')
+let right_arrow_button = document.getElementById('right-arrow')
+
+var arrow_keys = [ left_arrow_button, right_arrow_button ]
+
+
 let energy_bar = new EnergyBar(document.querySelector('.energy-bar'), 100)
 let life_bar = new LifeBar(document.querySelector('.life-bar'), 100) 
 
@@ -36,6 +42,60 @@ var logic_gates = [ and, or ]
 /****** FUNCTIONS *///////////
 function toRad(angle) {
   return angle * Math.PI / 180
+}
+
+new addInputButtonToContainer("A", "rgba(0, 0, 255, .3)", false)
+new addInputButtonToContainer("S", "rgba(0, 255, 0, .3)", false)
+new addInputButtonToContainer("D", "rgba(0, 255, 0, .3)", false)
+new addInputButtonToContainer("F", "rgba(0, 255, 0, .3)", false)
+/* new addInputButtonToContainer()
+new addInputButtonToContainer()
+new addInputButtonToContainer()
+new adddInputButtonToContainer()
+new addInputButtonToContainer() */
+
+/* addRotateButtonToContainer() */
+
+function addInputButtonToContainer (idInput, color, isOn=false) {
+  const container = document.querySelector('.InputButtonContainer')
+  const button = document.createElement('button')
+
+
+  button.style.backgroundColor = color
+  button.style.width = "80px"
+  button.style.height = "80px"
+  button.style.borderRadius = "50%"
+  button.style.margin = "5px"
+  button.style.border = "solid 7px"
+  button.style.borderColor = "black"
+  button.innerText = idInput
+  button.style.fontSize = "40px"
+  container.appendChild(button)
+
+  this.isOn = isOn
+  this.changeColor = function(){
+
+  }
+}
+
+function turnOnColor(color) {
+  let turnedOnColor = color.split('')
+  turnedOnColor.pop()
+  turnedOnColor.pop()
+  turnedOnColor.pop()
+  turnedOnColor.push("1)")
+
+  return turnedOnColor.join('')
+}
+
+function turnOffColor(color) {
+  let turnedOnColor = color.split('')
+  turnedOnColor.pop()
+  turnedOnColor.pop()
+  turnedOnColor.pop()
+  turnedOnColor.push(" .3)")
+
+  return turnedOnColor.join('')
 }
 
 function circuito() {
@@ -217,10 +277,9 @@ function keyDown(evt) {
       s_input = false
     }
   }
-
-
-  
 }
+
+
 
 
 //Game Loop//
@@ -263,6 +322,16 @@ let loop = GameLoop({  // create the main game loop
     count = 0
 
     document.addEventListener('keydown', keyDown)
+
+    right_arrow_button.onmousedown = function () {
+      and.angle += toRad(1)
+      or.angle += toRad(1)
+    }
+    
+    left_arrow_button.onmousedown = function () {
+      and.angle -= toRad(1)
+      or.angle -= toRad(1)
+    }
     /* if(){
       if(band === false){
         and.colorSup = "blue"

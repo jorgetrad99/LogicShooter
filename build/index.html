@@ -1,1 +1,167 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Document</title><link rel="stylesheet" href="./styles.css"></head><body><canvas class="gameScreen" width="800" height="600"></canvas><script src="bundle.js"></script><script src="js/home.js"></script></body></html>
+<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Document</title></head><style>body{
+        background-color: black;
+    }    
+
+    .top {
+        width: 800px;
+        height: 60px;
+        border: 5px solid white;
+        border-bottom: none;
+        background-color: rgb(163, 157, 157);
+        padding-left: 0; 
+        padding-right: 0; 
+        margin-left: auto; 
+        margin-right: auto; 
+        display: flex;
+        align-items: center;
+        justify-content: center; 
+    }
+
+    .energy-bar {
+        position: relative;
+        width: 300px;
+        height: 40px;
+        margin-right: 70px;
+        border: 3px solid #000
+    }
+
+    .energy-bar-fill{
+        height: 100%;
+        background: #59ea63;
+        transition: width 0s;
+    } 
+
+    .energy-bar-value {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        font-family: Arial;
+        font-size: 25px;
+        font-weight: bold;
+    }
+    .life-bar {
+        position: relative;
+        width: 300px;
+        height: 40px;
+        margin-left: 70px;
+        border: 3px solid #000
+    }
+
+    .life-bar-fill{
+        height: 100%;
+        background: #c03b3b;
+        transition: width 0s;
+    } 
+
+    .life-bar-value {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        font-family: Arial;
+        font-size: 25px;
+        font-weight: bold;
+    }
+
+    #gameScreen {
+        border: 5px solid white;
+        border-top: none;
+        border-bottom: none;
+        background-color: rgb(163, 157, 157);
+        padding-left: 0; 
+        padding-right: 0; 
+        margin-left: auto; 
+        margin-right: auto; 
+        display: block; 
+    }
+
+    .bottom {
+        width: 800px;
+        height: 200px;
+        border: 5px solid white;
+        /* border-top: none; */
+        background-color: rgb(163, 157, 157);
+        padding-left: 0; 
+        padding-right: 0; 
+        margin-left: auto; 
+        margin-right: auto; 
+        display: flex;
+        align-items: center;
+        justify-content: center; 
+    }
+
+    .InputButtonContainer {
+        display: flex;
+        width: 60%;
+        align-items: center;
+        justify-content: space-evenly; 
+    }
+    .RotateButtonContainer {
+        display: flex;
+        width: 40%;
+        align-items: center;
+        justify-content: space-evenly;  
+    }
+
+    li {
+        list-style: none;
+        width: 80px;
+        height: 80px;
+        background: rgba(255, 0, 0, 1);
+        border: solid 7px rgb(77, 17, 17);
+        margin: 0 10px;
+        border-radius: 50%;
+    }
+
+    li:hover {
+        background: rgb(128, 16, 16);
+    }
+
+    li span {
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        border: 7px solid #fff;
+
+    }
+
+    li#right-arrow span {
+        transform: translate(32px, 28px) rotate(-45deg);
+        border-left: none;
+        border-top: none;
+    }
+
+    li#right-arrow span:before {
+        content: '';
+        position: absolute;
+        width: 38px;
+        height: 7px;
+        background: #fff;
+        transform-origin: right;
+        transform: rotate(45deg) translate(4px, 24px);
+    }
+
+    li#left-arrow span {
+        transform: translate(23px, 28px) rotate(-225deg);
+        border-left: none;
+        border-top: none;
+    }
+
+    li#left-arrow span:before {
+        content: '';
+        position: absolute;
+        width: 38px;
+        height: 7px;
+        background: #fff;
+        transform-origin: right;
+        transform: rotate(45deg) translate(4px, 24px);
+    }</style><body><div class="top"><div class="energy-bar"><div class="energy-bar-value"></div><div class="energy-bar-fill"></div></div><div class="life-bar"><div class="life-bar-value"></div><div class="life-bar-fill"></div></div></div><canvas id="gameScreen" width="800" height="800"></canvas><div class="bottom"><div class="InputButtonContainer"></div><div class="RotateButtonContainer"><li id="left-arrow"><span></span></li><li id="right-arrow"><span></span></li></div></div><script src="js/home.js"></script></body></html>

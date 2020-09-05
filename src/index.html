@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <!-- <link rel="stylesheet" href="./styles.css"> -->
 </head>
 <style>
     body{
@@ -106,7 +105,78 @@
         display: flex;
         align-items: center;
         justify-content: center; 
-    } 
+    }
+
+    .InputButtonContainer {
+        display: flex;
+        width: 60%;
+        align-items: center;
+        justify-content: space-evenly; 
+    }
+    .RotateButtonContainer {
+        display: flex;
+        width: 40%;
+        align-items: center;
+        justify-content: space-evenly;  
+    }
+
+    li {
+        list-style: none;
+        width: 80px;
+        height: 80px;
+        background: rgba(255, 0, 0, 1);
+        border: solid 7px rgb(77, 17, 17);
+        margin: 0 10px;
+        border-radius: 50%;
+    }
+
+    li:hover {
+        background: rgb(128, 16, 16);
+    }
+
+    li span {
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        border: 7px solid #fff;
+
+    }
+
+    li#right-arrow span {
+        transform: translate(32px, 28px) rotate(-45deg);
+        border-left: none;
+        border-top: none;
+    }
+
+    li#right-arrow span:before {
+        content: '';
+        position: absolute;
+        width: 38px;
+        height: 7px;
+        background: #fff;
+        transform-origin: right;
+        transform: rotate(45deg) translate(4px, 24px);
+    }
+
+    li#left-arrow span {
+        transform: translate(23px, 28px) rotate(-225deg);
+        border-left: none;
+        border-top: none;
+    }
+
+    li#left-arrow span:before {
+        content: '';
+        position: absolute;
+        width: 38px;
+        height: 7px;
+        background: #fff;
+        transform-origin: right;
+        transform: rotate(45deg) translate(4px, 24px);
+    }
+
+
+
+
 </style>
 <body>
     <div class="top">
@@ -121,7 +191,11 @@
     </div>
     <canvas id="gameScreen" width=800 height=800></canvas>
     <div class="bottom">
-        
+        <div class="InputButtonContainer"></div>
+        <div class="RotateButtonContainer">
+            <li id="left-arrow"><span></span></li>
+            <li id="right-arrow"><span></span></li>
+        </div>
     </div>
 </body>
 </html>
