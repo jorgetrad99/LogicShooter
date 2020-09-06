@@ -2,13 +2,13 @@ import { init, Sprite, initKeys, keyPressed, GameLoop, getContext } from 'kontra
 import EnergyBar, {LifeBar} from './Bars.js'
 
 let { canvas } = init();
-
+let ctx = getContext("2d")
 initKeys();
 
 const CENTER = 400
 
 const GAME_STATE = {
-  PAUSED: 0,
+  NOTFOUND: 0,
   RUNNING: 1,
   MENU: 2,
   GAME_OVER: 3,
@@ -20,10 +20,42 @@ const LOGIC_GATE = {
   OR: 1
 }
 
-let ctx = getContext("2d")
+let notFound = document.getElementById("not-found")
+let top = document.querySelector(".top")
+let gameScreen = document.getElementById("gameScreen")
+let bottom = document.querySelector(".bottom")
 
-let left_arrow_button = document.getElementById('left-arrow')
-let right_arrow_button = document.getElementById('right-arrow')
+if(screen.width <= 280){
+  document.write("<style>body{zoom:35%}</style>")
+}else if(screen.width > 320 && screen.width <= 375){
+  document.write("<style>body{zoom:45%}</style>")
+}else if(screen.width > 375 && screen.width <= 414){
+  document.write("<style>body{zoom:50%}</style>")
+}else if(screen.width > 280 && screen.width <= 320){
+  document.write("<style>body{zoom:40%}</style>")
+}else if(screen.width >= 500 && screen.width < 700){
+  document.write("<style>body{zoom:65%}</style>")
+}else if(screen.width >= 750 && screen.width < 1000){
+  document.write("<style>body{zoom:92%}</style>")
+}else if(screen.width >= 1000){
+  document.write("<style>body{zoom:80%}</style>")
+}          
+
+/* 
+let remaining_height = document.querySelector('.bottom')
+
+remaining_height.height = window.height - 860 */
+
+
+let left_arrow_button = {
+  id: document.getElementById('left-arrow'),
+  flag: false
+}
+
+let right_arrow_button = {
+  id: document.getElementById('right-arrow'),
+  flag: false
+}  
 
 var arrow_keys = [ left_arrow_button, right_arrow_button ]
 
@@ -44,10 +76,18 @@ function toRad(angle) {
   return angle * Math.PI / 180
 }
 
-new addInputButtonToContainer("A", "rgba(0, 0, 255, .3)", false)
-new addInputButtonToContainer("S", "rgba(0, 255, 0, .3)", false)
-new addInputButtonToContainer("D", "rgba(0, 255, 0, .3)", false)
-new addInputButtonToContainer("F", "rgba(0, 255, 0, .3)", false)
+let a_in_but = new addInputButtonToContainer("A", "rgba(0, 0, 255, .3)", false, true)
+let s_in_but = new addInputButtonToContainer("S", "rgba(0, 255, 0, .3)", false, true)
+let d_in_but = new addInputButtonToContainer("D", "rgba(0, 255, 0, .3)", false, true)
+let f_in_but = new addInputButtonToContainer("F", "rgba(0, 255, 0, .3)", false, false)
+
+let inputs = [a_in_but, s_in_but, d_in_but, f_in_but ]
+
+s_in_but.active = false
+
+inputs.forEach((object) => object.changeActive())
+
+
 /* new addInputButtonToContainer()
 new addInputButtonToContainer()
 new addInputButtonToContainer()
@@ -56,26 +96,53 @@ new addInputButtonToContainer() */
 
 /* addRotateButtonToContainer() */
 
-function addInputButtonToContainer (idInput, color, isOn=false) {
+function addInputButtonToContainer (idInput, color, isOn=false, active = true) {
   const container = document.querySelector('.InputButtonContainer')
   const button = document.createElement('button')
 
+  this.color = color
+  this.active = active
 
-  button.style.backgroundColor = color
+  button.style.backgroundColor = "rgba(92, 92, 92, 1)"
   button.style.width = "80px"
   button.style.height = "80px"
   button.style.borderRadius = "50%"
+  button.style.outline = "none"
   button.style.margin = "5px"
   button.style.border = "solid 7px"
   button.style.borderColor = "black"
   button.innerText = idInput
   button.style.fontSize = "40px"
+  button.style.backgroundColor = this.color
   container.appendChild(button)
 
   this.isOn = isOn
+  this.changeActive = function() {
+    if(this.active){
+      button.style.display = "block"
+    }else{
+      button.style.display = "none"
+    }
+  }
   this.changeColor = function(){
 
   }
+}
+
+function hideElements() {
+  top.style.display = "none"
+  gameScreen.style.display = "none"
+  bottom.style.display = "none"
+}
+
+function showElements() {
+  top.style.display = "flex"
+  gameScreen.style.display = "block"
+  bottom.style.display = "flex"
+}
+
+function hideNotFound(){
+  notFound.style.display = "none"
 }
 
 function turnOnColor(color) {
@@ -279,69 +346,95 @@ function keyDown(evt) {
   }
 }
 
+function checkKeyPressed() {
+  if(keyPressed('right')){
+    and.angle += toRad(1)
+    or.angle += toRad(1)
+  }
+  if(keyPressed('left')){
+    and.angle -= toRad(1)
+    or.angle -= toRad(1)
+  }
+  
+  if( a_input === true && s_input === true){
+    logic_gates.forEach((object) => {
+      if(object.type === 0) {   //And
+        count += 3 / 60
+      } else if(object.type === 1){   //Or
+        count += 1 / 60
+      }
+    })
+  } else if (a_input === true || s_input === true) {
+    logic_gates.forEach((object) => {
+      if(object.type === 1){   //Or
+        count += 1 / 60
+      }
+    })  
+  } else {
+    count -= 1 / 60 / 2
+  }
+}
 
 
+let state = GAME_STATE.NOTFOUND
+hideElements()
 
 //Game Loop//
 let loop = GameLoop({  // create the main game loop
     
   update: function() { // update the game state
-    /* sprite.update(); */
-    gameObjects.forEach((object) => object.update())
-    if(keyPressed('right')){
-      and.angle += toRad(1)
-      or.angle += toRad(1)
-    }
-    if(keyPressed('left')){
-      and.angle -= toRad(1)
-      or.angle -= toRad(1)
-    }
-
-
-    if( a_input === true && s_input === true){
-      logic_gates.forEach((object) => {
-        if(object.type === 0) {   //And
-          count += 3 / 60
-        } else if(object.type === 1){   //Or
-          count += 1 / 60
-        }
-      })
-      
-      
-    } else if (a_input === true || s_input === true) {
-      logic_gates.forEach((object) => {
-        if(object.type === 1){   //Or
-          count += 1 / 60
-        }
-      })  
-    } else {
-      count -= 1 / 60 / 2
-    }
-
-    energy_bar.setValue(energy_bar.value - count)
-    count = 0
-
-    document.addEventListener('keydown', keyDown)
-
-    right_arrow_button.onmousedown = function () {
-      and.angle += toRad(1)
-      or.angle += toRad(1)
-    }
     
-    left_arrow_button.onmousedown = function () {
-      and.angle -= toRad(1)
-      or.angle -= toRad(1)
-    }
-    /* if(){
-      if(band === false){
-        and.colorSup = "blue"
-        band = true
-      } else {
-        and.colorSup = "black"
-        band = false
+    switch(state) {
+      case GAME_STATE.NOTFOUND:
+        setTimeout(() => {
+          state = GAME_STATE.RUNNING
+        }
+          ,1000)
         
-      }
-    } */
+        break
+
+      case GAME_STATE.RUNNING:
+        hideNotFound()
+        showElements()
+        gameObjects.forEach((object) => object.update())
+        
+        checkKeyPressed()
+
+        energy_bar.setValue(energy_bar.value - count)
+        count = 0
+
+
+
+        document.addEventListener('keydown', keyDown)
+
+        right_arrow_button.id.onmousedown = function () {
+          right_arrow_button.flag = true
+        }
+        right_arrow_button.id.onmouseup = function () {
+          right_arrow_button.flag = false
+        }
+        
+        left_arrow_button.id.onmousedown = function () {
+          left_arrow_button.flag = true
+        }  
+        left_arrow_button.id.onmouseup = function () {
+          left_arrow_button.flag = false
+        }  
+
+        if(right_arrow_button.flag === true){
+          and.angle += toRad(1)
+          or.angle += toRad(1)
+        }
+        if(left_arrow_button.flag === true){
+          and.angle -= toRad(1)
+          or.angle -= toRad(1)
+        }
+
+        /* left_arrow_button.mousePressed = function () {
+          and.angle -= toRad(1)
+          or.angle -= toRad(1)
+        }   */
+    }
   },
   render: function() { // render the game state
 
