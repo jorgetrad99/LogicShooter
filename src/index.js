@@ -78,12 +78,13 @@ function toRad(angle) {
 
 let a_in_but = new addInputButtonToContainer("A", "rgba(0, 0, 255, .3)", false, true)
 let s_in_but = new addInputButtonToContainer("S", "rgba(0, 255, 0, .3)", false, true)
-let d_in_but = new addInputButtonToContainer("D", "rgba(0, 255, 0, .3)", false, true)
+let d_in_but = new addInputButtonToContainer("D", "rgba(0, 255, 0, .3)", false, false)
 let f_in_but = new addInputButtonToContainer("F", "rgba(0, 255, 0, .3)", false, false)
 
 let inputs = [a_in_but, s_in_but, d_in_but, f_in_but ]
 
-s_in_but.active = false
+
+
 
 inputs.forEach((object) => object.changeActive())
 
@@ -98,34 +99,53 @@ new addInputButtonToContainer() */
 
 function addInputButtonToContainer (idInput, color, isOn=false, active = true) {
   const container = document.querySelector('.InputButtonContainer')
-  const button = document.createElement('button')
+  this.button = document.createElement('button')
 
   this.color = color
   this.active = active
 
-  button.style.backgroundColor = "rgba(92, 92, 92, 1)"
-  button.style.width = "80px"
-  button.style.height = "80px"
-  button.style.borderRadius = "50%"
-  button.style.outline = "none"
-  button.style.margin = "5px"
-  button.style.border = "solid 7px"
-  button.style.borderColor = "black"
-  button.innerText = idInput
-  button.style.fontSize = "40px"
-  button.style.backgroundColor = this.color
-  container.appendChild(button)
+  this.button.style.backgroundColor = "rgba(92, 92, 92, 1)"
+  this.button.style.width = "80px"
+  this.button.style.height = "80px"
+  this.button.style.borderRadius = "50%"
+  this.button.style.outline = "none"
+  this.button.style.margin = "5px"
+  this.button.style.border = "solid 7px"
+  this.button.style.borderColor = "black"
+  this.button.innerText = idInput
+  this.button.id = idInput.toLowerCase()
+  this.button.style.fontSize = "40px"
+  this.button.style.backgroundColor = this.color
+  container.appendChild(this.button)
+
+  this.id = document.getElementById(this.button.id)
 
   this.isOn = isOn
   this.changeActive = function() {
     if(this.active){
-      button.style.display = "block"
+      this.button.style.display = "block"
     }else{
-      button.style.display = "none"
+      this.button.style.display = "none"
     }
   }
-  this.changeColor = function(){
+}
 
+addInputButtonToContainer.prototype.changeColor = function(){
+  console.log(this.color)
+  console.log(this.color.length);
+
+  switch(this.color.length){
+    case 19:
+      this.button.style.backgroundColor = turnOnColor(this.color)
+      this.color = turnOnColor(this.color)
+      console.log("Está encendido "+this.color)
+      break
+    case 18:
+      console.log("entró")
+      this.button.style.backgroundColor = turnOffColor(this.color)
+      this.color = turnOffColor(this.color)
+      console.log("Está apagado "+this.color)
+      break
   }
 }
 
@@ -325,12 +345,14 @@ function keyDown(evt) {
     if(a_input === false){
       and.colorSup = "rgba(0, 0, 255, 1)"
       or.colorInf = "rgba(0, 0, 255, 1)"
+      
       a_input = true
     } else {
       and.colorSup = "rgba(0, 0, 255, .3)"
       or.colorInf = "rgba(0, 0, 255, .3)"
       a_input = false
     }
+    a_in_but.changeColor()
   }
 
   if(evt.keyCode == 83){
@@ -343,6 +365,59 @@ function keyDown(evt) {
       or.colorSup = "rgba(0, 255, 0, .3)"
       s_input = false
     }
+    s_in_but.changeColor()
+  }
+}
+
+function checkButtonPressed(){
+  right_arrow_button.id.onmousedown = function () {
+    right_arrow_button.flag = true
+  }
+  right_arrow_button.id.onmouseup = function () {
+    right_arrow_button.flag = false
+  }
+  
+  left_arrow_button.id.onmousedown = function () {
+    left_arrow_button.flag = true
+  }  
+  left_arrow_button.id.onmouseup = function () {
+    left_arrow_button.flag = false
+  }  
+
+  if(right_arrow_button.flag === true){
+    and.angle += toRad(1)
+    or.angle += toRad(1)
+  }
+  if(left_arrow_button.flag === true){
+    and.angle -= toRad(1)
+    or.angle -= toRad(1)
+  }
+
+  a_in_but.id.onmousedown = function() {
+    if(a_input === false){
+      and.colorSup = "rgba(0, 0, 255, 1)"
+      or.colorInf = "rgba(0, 0, 255, 1)"
+      
+      a_input = true
+    } else {
+      and.colorSup = "rgba(0, 0, 255, .3)"
+      or.colorInf = "rgba(0, 0, 255, .3)"
+      a_input = false
+    }
+    a_in_but.changeColor()
+  }
+
+  s_in_but.id.onmousedown = function(){
+    if(s_input === false){
+      and.colorInf = "rgba(0, 255, 0, 1)"
+      or.colorSup = "rgba(0, 255, 0, 1)"
+      s_input = true
+    } else {
+      and.colorInf = "rgba(0, 255, 0, .3)"
+      or.colorSup = "rgba(0, 255, 0, .3)"
+      s_input = false
+    }
+    s_in_but.changeColor()
   }
 }
 
@@ -398,42 +473,16 @@ let loop = GameLoop({  // create the main game loop
         showElements()
         gameObjects.forEach((object) => object.update())
         
-        checkKeyPressed()
-
         energy_bar.setValue(energy_bar.value - count)
         count = 0
 
-
-
         document.addEventListener('keydown', keyDown)
 
-        right_arrow_button.id.onmousedown = function () {
-          right_arrow_button.flag = true
-        }
-        right_arrow_button.id.onmouseup = function () {
-          right_arrow_button.flag = false
-        }
+        checkButtonPressed()        
+
+        checkKeyPressed()
+
         
-        left_arrow_button.id.onmousedown = function () {
-          left_arrow_button.flag = true
-        }  
-        left_arrow_button.id.onmouseup = function () {
-          left_arrow_button.flag = false
-        }  
-
-        if(right_arrow_button.flag === true){
-          and.angle += toRad(1)
-          or.angle += toRad(1)
-        }
-        if(left_arrow_button.flag === true){
-          and.angle -= toRad(1)
-          or.angle -= toRad(1)
-        }
-
-        /* left_arrow_button.mousePressed = function () {
-          and.angle -= toRad(1)
-          or.angle -= toRad(1)
-        }   */
     }
   },
   render: function() { // render the game state
