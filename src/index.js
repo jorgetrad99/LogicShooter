@@ -138,13 +138,10 @@ addInputButtonToContainer.prototype.changeColor = function(){
     case 19:
       this.button.style.backgroundColor = turnOnColor(this.color)
       this.color = turnOnColor(this.color)
-      console.log("Está encendido "+this.color)
       break
     case 18:
-      console.log("entró")
       this.button.style.backgroundColor = turnOffColor(this.color)
       this.color = turnOffColor(this.color)
-      console.log("Está apagado "+this.color)
       break
   }
 }
@@ -453,6 +450,8 @@ function checkKeyPressed() {
 
 let state = GAME_STATE.NOTFOUND
 hideElements()
+let solve_problem = document.getElementById('solve-problem')
+solve_problem.style.display = "none"
 
 //Game Loop//
 let loop = GameLoop({  // create the main game loop
@@ -462,9 +461,16 @@ let loop = GameLoop({  // create the main game loop
     switch(state) {
       case GAME_STATE.NOTFOUND:
         setTimeout(() => {
+          solve_problem.style.display = "block"
+          /* state = GAME_STATE.RUNNING */
+        }
+          ,2000)
+        document.onkeypress=function(e){    //press any key to start
           state = GAME_STATE.RUNNING
         }
-          ,1000)
+        document.onmousedown=function(e){    //press any key to start
+          state = GAME_STATE.RUNNING
+        }    
         
         break
 
