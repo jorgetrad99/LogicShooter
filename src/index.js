@@ -379,7 +379,20 @@ function checkButtonPressed(){
   }  
   left_arrow_button.id.onmouseup = function () {
     left_arrow_button.flag = false
+  }
+  right_arrow_button.id.ontouchstart = function () {
+    right_arrow_button.flag = true
+  }
+  right_arrow_button.id.ontouchend = function () {
+    right_arrow_button.flag = false
+  }
+  
+  left_arrow_button.id.ontouchstart = function () {
+    left_arrow_button.flag = true
   }  
+  left_arrow_button.id.ontouchend = function () {
+    left_arrow_button.flag = false
+  }
 
   if(right_arrow_button.flag === true){
     and.angle += toRad(1)
@@ -416,7 +429,36 @@ function checkButtonPressed(){
     }
     s_in_but.changeColor()
   }
+
+  /* a_in_but.id.ontouchstart = function() {
+    if(a_input === false){
+      and.colorSup = "rgba(0, 0, 255, 1)"
+      or.colorInf = "rgba(0, 0, 255, 1)"
+      
+      a_input = true
+    } else {
+      and.colorSup = "rgba(0, 0, 255, .3)"
+      or.colorInf = "rgba(0, 0, 255, .3)"
+      a_input = false
+    }
+    a_in_but.changeColor()
+  }
+
+  s_in_but.id.ontouchstart = function(){
+    if(s_input === false){
+      and.colorInf = "rgba(0, 255, 0, 1)"
+      or.colorSup = "rgba(0, 255, 0, 1)"
+      s_input = true
+    } else {
+      and.colorInf = "rgba(0, 255, 0, .3)"
+      or.colorSup = "rgba(0, 255, 0, .3)"
+      s_input = false
+    }
+    s_in_but.changeColor()
+  } */
 }
+
+
 
 function checkKeyPressed() {
   if(keyPressed('right')){
@@ -448,7 +490,7 @@ function checkKeyPressed() {
 }
 
 
-let state = GAME_STATE.NOTFOUND
+let state = GAME_STATE.NOTFOUND 
 hideElements()
 let solve_problem = document.getElementById('solve-problem')
 solve_problem.style.display = "none"
@@ -470,7 +512,10 @@ let loop = GameLoop({  // create the main game loop
         }
         document.onmousedown=function(e){    //press any key to start
           state = GAME_STATE.RUNNING
-        }    
+        }
+        document.touchstart = function(e){
+          state = GAME_STATE.RUNNING
+        }
         
         break
 

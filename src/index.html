@@ -152,7 +152,7 @@
         justify-content: space-evenly;  
     }
 
-    li {
+    .RotateButtonContainer button {
         list-style: none;
         width: 80px;
         height: 80px;
@@ -160,13 +160,14 @@
         border: solid 7px rgb(77, 17, 17);
         margin: 0 10px;
         border-radius: 50%;
+        outline: none;
     }
 
-    li:hover {
+    /* .RotateButtonContainer button:hover {
         background: rgb(128, 16, 16);
-    }
+    } */
 
-    li span {
+    .RotateButtonContainer button div {
         position: absolute;
         width: 20px;
         height: 20px;
@@ -174,36 +175,36 @@
 
     }
 
-    li#right-arrow span {
-        transform: translate(32px, 28px) rotate(-45deg);
+    #right-arrow div {
+        transform: translate(17px, -13px) rotate(-45deg);
         border-left: none;
         border-top: none;
     }
 
-    li#right-arrow span:before {
+    #right-arrow div:before {
         content: '';
         position: absolute;
         width: 38px;
         height: 7px;
         background: #fff;
         transform-origin: right;
-        transform: rotate(45deg) translate(4px, 24px);
+        transform: rotate(45deg) translate(-6px, 30px);
     }
 
-    li#left-arrow span {
-        transform: translate(23px, 28px) rotate(-225deg);
+    #left-arrow div {
+        transform: translate(8px, -15px) rotate(-225deg);
         border-left: none;
         border-top: none;
     }
 
-    li#left-arrow span:before {
+    #left-arrow div:before {
         content: '';
         position: absolute;
         width: 38px;
         height: 7px;
         background: #fff;
         transform-origin: right;
-        transform: rotate(45deg) translate(4px, 24px);
+        transform: rotate(45deg) translate(-6px, 31px);
     }
 
 </style>
@@ -232,8 +233,8 @@
     <div class="bottom">
         <div class="InputButtonContainer"></div>
         <div class="RotateButtonContainer">
-            <li id="left-arrow"><span></span></li>
-            <li id="right-arrow"><span></span></li>
+            <button id="left-arrow"><div></div></button>
+            <button id="right-arrow"><div></div></button>
         </div>
     </div>
 </body>
