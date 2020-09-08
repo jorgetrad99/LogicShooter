@@ -224,7 +224,6 @@ function circulote() {
 /****** Enemies ******/
 function Generator(){
   
-  
   this.life = 100
   this.r = 40
   
@@ -239,11 +238,6 @@ function Generator(){
     y: -2
   }
 
-  
-  
-
-  
- 
   this.update = function() {
     this.angle += 1/60
     this.position.x += this.speed.x
@@ -281,16 +275,31 @@ function Generator(){
 
     let dist = Math.sqrt(Math.pow(CENTER - this.position.x, 2) + Math.pow(CENTER - this.position.y, 2))
     
-    if(dist >= 300 - Math.sqrt(Math.pow(this.r / 2, 2) * 2) ){
-      this.speed.x = 1 * Math.random() * (4 - 1) -1
-      this.speed.y = 1 * Math.random() * (4 - 1) -1
+    if(dist >= 200 - Math.sqrt(Math.pow(this.r / 2, 2) * 2) ){
+      if(this.position.x > CENTER && this.position.y < CENTER){
+        this.speed.x = randomSpeed()
+        this.speed.y = -randomSpeed()
+      }else if(this.position.x < CENTER && this.position.y < CENTER){
+        this.speed.x = -randomSpeed()
+        this.speed.y = -randomSpeed()
+      }else if(this.position.x < CENTER && this.position.y > CENTER){
+        this.speed.x = -randomSpeed()
+        this.speed.y = randomSpeed()
+      }else if(this.position.x > CENTER && this.position.y > CENTER){
+        this.speed.x = randomSpeed()
+        this.speed.y = randomSpeed()
+      }
     }
-    
   }
 
 
   
 }
+
+function randomSpeed() {
+  return Math.random() * (5 - 3) - 3
+}
+
 
 
 /****** LOGIC GATES ******/
@@ -320,9 +329,7 @@ function LogicGate(x, y, angle, colorSup, colorInf, type){
         
     //And
     if(this.type === 0) {
-
       //Semicircle
-      
       ctx.arc(this.x, this.y, this.r, toRad(90), toRad(270), true)
       ctx.fill()
 
@@ -644,8 +651,6 @@ let loop = GameLoop({  // create the main game loop
     gameObjects.forEach((object) => object.update())
 
     switch(state) {
-
-      
       case  GAME_STATE.INSTRUCTIONS:
       
         switch (state_inst) {
