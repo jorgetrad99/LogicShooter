@@ -22,6 +22,11 @@ const LOGIC_GATE = {
   OR: 1
 }
 
+const ENEMIES = {
+  GENERATOR: 0,
+  BUG: 1
+}
+
 let notFound = document.getElementById("not-found")
 let top = document.querySelector(".top")
 let gameScreen = document.getElementById("gameScreen")
@@ -43,12 +48,6 @@ if(screen.width <= 280){
   document.write("<style>body{zoom:80%}</style>")
 }          
 
-/* 
-let remaining_height = document.querySelector('.bottom')
-
-remaining_height.height = window.height - 860 */
-
-
 let left_arrow_button = {
   id: document.getElementById('left-arrow'),
   flag: false
@@ -57,18 +56,21 @@ let left_arrow_button = {
 let right_arrow_button = {
   id: document.getElementById('right-arrow'),
   flag: false
-}  
+}
 
-var arrow_keys = [ left_arrow_button, right_arrow_button ]
+
 
 
 let energy_bar = new EnergyBar(document.querySelector('.energy-bar'), 100)
 let life_bar = new LifeBar(document.querySelector('.life-bar'), 100) 
 
-let and = new logicGate(-350, 0, 0, "rgba(0, 0, 255, .3)", "rgba(0, 255, 0, .3)", LOGIC_GATE.AND)
-let or = new logicGate(-350, 0, toRad(90), "rgba(0, 255, 0, .3)", "rgba(0, 0, 255, .3)", LOGIC_GATE.OR)
-var gameObjects = [ and, or, energy_bar, life_bar ]
+let generator = new Generator()
 
+let and = new LogicGate(-350, 0, 0, "rgba(0, 0, 255, .3)", "rgba(0, 255, 0, .3)", LOGIC_GATE.AND)
+let or = new LogicGate(-350, 0, toRad(90), "rgba(0, 255, 0, .3)", "rgba(0, 0, 255, .3)", LOGIC_GATE.OR)
+
+var gameObjects = [ and, or, generator, energy_bar, life_bar ]
+var arrow_keys = [ left_arrow_button, right_arrow_button ]
 var logic_gates = [ and, or ]
 
 
@@ -219,8 +221,89 @@ function circulote() {
   ctx.stroke()
 }
 
+/****** Enemies ******/
+function Generator(){
+  
+  this.life = 100
+  this.r = 40
+  
+  this.angle = 0
+
+  this.position = {
+    x: CENTER,
+    y: CENTER
+  }
+  this.speed = {
+    x: 1,
+    y: -2
+  }
+
+  this.update = function() {
+    this.angle += 1/60
+    this.position.x += this.speed.x
+    this.position.y += this.speed.y
+
+    ctx.lineWidth = 2
+
+    ctx.save();
+
+    ctx.translate(this.position.x, this.position.y)
+
+    ctx.beginPath()
+    ctx.rotate(this.angle + 45); 
+    ctx.rect(- this.r / 2, - this.r / 2, this.r, this. r)
+    ctx.fillStyle = "#899"
+    ctx.fill()
+    ctx.stroke()
+    ctx.closePath()
+    
+    ctx.restore()
+
+    ctx.save()
+    ctx.translate(this.position.x, this.position.y)
+    
+    ctx.fillStyle = "rgb(250, 245, 80)"
+    ctx.strokeStyle = "#000"
+    ctx.rotate(this.angle); 
+    ctx.beginPath()
+    ctx.rect(- this.r / 2, - this.r / 2, this.r, this. r)
+    ctx.fill()
+    ctx.stroke()
+    ctx.closePath()
+
+    ctx.restore()
+
+    let dist = Math.sqrt(Math.pow(CENTER - this.position.x, 2) + Math.pow(CENTER - this.position.y, 2))
+    
+    if(dist >= 200 - Math.sqrt(Math.pow(this.r / 2, 2) * 2) ){
+      if(this.position.x > CENTER && this.position.y < CENTER){
+        this.speed.x = randomSpeed()
+        this.speed.y = -randomSpeed()
+      }else if(this.position.x < CENTER && this.position.y < CENTER){
+        this.speed.x = -randomSpeed()
+        this.speed.y = -randomSpeed()
+      }else if(this.position.x < CENTER && this.position.y > CENTER){
+        this.speed.x = -randomSpeed()
+        this.speed.y = randomSpeed()
+      }else if(this.position.x > CENTER && this.position.y > CENTER){
+        this.speed.x = randomSpeed()
+        this.speed.y = randomSpeed()
+      }
+    }
+  }
+
+
+  
+}
+
+function randomSpeed() {
+  return Math.random() * (5 - 3) - 3
+}
+
+
+
 /****** LOGIC GATES ******/
-function logicGate(x, y, angle, colorSup, colorInf, type){
+function LogicGate(x, y, angle, colorSup, colorInf, type){
   this.r = 20
   if(type === 0){
     this.x = x + 10
@@ -246,9 +329,7 @@ function logicGate(x, y, angle, colorSup, colorInf, type){
         
     //And
     if(this.type === 0) {
-
       //Semicircle
-      
       ctx.arc(this.x, this.y, this.r, toRad(90), toRad(270), true)
       ctx.fill()
 
@@ -265,7 +346,6 @@ function logicGate(x, y, angle, colorSup, colorInf, type){
       ctx.beginPath()
       ctx.moveTo(this.x - this.r, this.y - this.r + this.r / 2)
       ctx.lineTo(this.x - this.r * 2, this.y - this.r + this.r / 2)
-      /* ctx.arc(this.x - this.r * 2, this.y - this.r + this.r / 2, this.r/4, 0, 2*Math.PI, true) */
       
       ctx.stroke()
       
@@ -293,7 +373,8 @@ function logicGate(x, y, angle, colorSup, colorInf, type){
       ctx.beginPath()
       ctx.arc(this.x - this.r * 2, this.y + this.r / 2, this.r / 3, 0, toRad(360), true)
       ctx.fillStyle = this.colorInf
-      ctx.fill() 
+      ctx.fill()
+      ctx.closePath()
     }
     //Or
     if( this.type === 1) {
@@ -457,14 +538,17 @@ function checkButtonTouched() {
 }
 
 function checkEvent() {
-  gameScreen.ontouchstart = function(e){    //Touch to start
-    state_inst ++
-  }
-  gameScreen.onmousedown = function(e){    //Click to start
-    state_inst ++
-  }
-  document.onkeypress=function(e){    //press any key to start
-    state_inst ++
+  if(state_inst <= 4) {
+
+    gameScreen.ontouchstart = function(e){    //Touch to start
+      state_inst ++
+    }
+    gameScreen.onmousedown = function(e){    //Click to start
+      state_inst ++
+    }
+    document.onkeypress=function(e){    //press any key to start
+      state_inst ++
+    }
   }
 }
 
@@ -497,17 +581,10 @@ function checkKeyPressed() {
   }
 }
 
-
-
-
 let start_game = document.getElementById('start-game')
 let asking = document.getElementById('asking')
 asking.style.display = "none"
 start_game.style.display = "none"
-/* hideNotFound() */
-
-
-
 
 let state_inst = 0
 hideElements()
@@ -518,7 +595,6 @@ let state = GAME_STATE.NOTFOUND
 let loop = GameLoop({  // create the main game loop
     
   update: function() { // update the game state
-    
     switch(state) {
       case GAME_STATE.NOTFOUND:
         hideElements()
@@ -526,6 +602,7 @@ let loop = GameLoop({  // create the main game loop
           asking.style.display = "block"
           setTimeout(() => {
             start_game.style.display = "block"
+
             document.onkeypress=function(e){    //press any key to start
               state = GAME_STATE.INSTRUCTIONS
             }
@@ -548,67 +625,69 @@ let loop = GameLoop({  // create the main game loop
         checkEvent()  
         break 
 
-      case GAME_STATE.RUNNING:
-        hideNotFound()
-        showElements()
-        
-        energy_bar.setValue(energy_bar.value - count)
-        count = 0
+        case  GAME_STATE.INSTRUCTIONS:
+          if(state_inst < 4) {
+            hideNotFound()
+            showElements()
+            opacityGame()
+            checkEvent()
+          }
+          break  
 
-        document.addEventListener('keydown', keyDown)
+        case GAME_STATE.RUNNING:
+          hideNotFound()
+          showElements()
 
-        checkButtonPressed()
-        checkButtonTouched()        
-        checkKeyPressed()
-        checkButtonFlag()
-        break
+          gameObjects.forEach((object) => object.update())
+          
+          energy_bar.setValue(energy_bar.value - count)
+          count = 0
 
-      
+          document.addEventListener('keydown', keyDown)
 
-        
+          checkButtonTouched()
+          checkButtonPressed()
+          checkButtonFlag()
+          checkKeyPressed()
     }
   },
   render: function() { // render the game state
-      switch(state) {
+    
+    circulito()
+    circulote()
+    gameObjects.forEach((object) => object.update())
 
-        case  GAME_STATE.INSTRUCTIONS:
-          circulote()
-          
-          gameObjects.forEach((object) => object.update())
-          
-          switch (state_inst) {
-            case 0:
-              dialog("We've found the error, you'll\nhave to destroy the generator\nand the enemies that came \nfrom it ")
-              break
-            case 1:
-              dialog("The only way to defeat them \nis by supplying energy to the \nlogic gates inputs. This can \nbe done by pressing the \nbuttons in the bottom left and \nif you wanna change the \nposition of the logic gates, \nyou can rotate them by \npressing the buttons in the \nbottom rigth.\n\nYou can also press the a, s, d, \nf, left arrow and right arrow \nkeys to do the same actions")
-              bottom.style.opacity = "1"
-              break
-            case 2:
-              dialog("The one on the left is an \nAnd Logic Gate. The TWO \ninputs of it must be supplied \nby energy in order to shoot \nenemies.\n\nThe one on the top is an Or \nLogic Gate. Just ONE of its \ninputs needs to be supplied \nby energy in order to shoot \nenemies")  
-              gameScreen.style.opacity = "1"
-              break
-            case 3:
-              dialog("Lastly just keep in mind that \nenergy decreases per each \ninput that is activated. Good \nluck c:")
-              top.style.opacity = "1"
-              break
-            case 4:
-              state = GAME_STATE.RUNNING
-
-          }
+    switch(state) {
+      case  GAME_STATE.INSTRUCTIONS:
+      
+        switch (state_inst) {
+          case 0:
+            dialog("We've found the error, you'll\nhave to destroy the generator\nand the enemies that came \nfrom it ")
+            break
+          case 1:
+            dialog("The only way to defeat them \nis by supplying energy to the \nlogic gates inputs. This can \nbe done by pressing the \nbuttons in the bottom left and \nif you wanna change the \nposition of the logic gates, \nyou can rotate them by \npressing the buttons in the \nbottom right.\n\nYou can also press the a, s, d, \nf, left arrow and right arrow \nkeys to do the same actions")
+            bottom.style.opacity = "1"
+            break
+          case 2:
+            dialog("The one on the left is an \nAnd Logic Gate. The TWO \ninputs of it must be supplied \nby energy in order to shoot \nenemies.\n\nThe one on the top is an Or \nLogic Gate. Just ONE of its \ninputs needs to be supplied \nby energy in order to shoot \nenemies")  
+            gameScreen.style.opacity = "1"
+            break
+          case 3:
+            dialog("Lastly just keep in mind that \nenergy decreases per each \ninput that is activated. Good \nluck c:")
+            top.style.opacity = "1"
+            break
+          default:
+            state = GAME_STATE.RUNNING
+        }
           break
+
         case GAME_STATE.RUNNING:
-          circulote()
-          circulito()
-          gameObjects.forEach((object) => object.update())
           UnOpacityGame()
-          
-          
           break
+    }      
 
-  
-          
-      }
+    
+    
     
   },
   fps: 60
