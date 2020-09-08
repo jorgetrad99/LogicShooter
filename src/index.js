@@ -22,6 +22,11 @@ const LOGIC_GATE = {
   OR: 1
 }
 
+const ENEMIES = {
+  GENERATOR: 0,
+  BUG: 1
+}
+
 let notFound = document.getElementById("not-found")
 let top = document.querySelector(".top")
 let gameScreen = document.getElementById("gameScreen")
@@ -43,12 +48,6 @@ if(screen.width <= 280){
   document.write("<style>body{zoom:80%}</style>")
 }          
 
-/* 
-let remaining_height = document.querySelector('.bottom')
-
-remaining_height.height = window.height - 860 */
-
-
 let left_arrow_button = {
   id: document.getElementById('left-arrow'),
   flag: false
@@ -57,18 +56,21 @@ let left_arrow_button = {
 let right_arrow_button = {
   id: document.getElementById('right-arrow'),
   flag: false
-}  
+}
 
-var arrow_keys = [ left_arrow_button, right_arrow_button ]
+
 
 
 let energy_bar = new EnergyBar(document.querySelector('.energy-bar'), 100)
 let life_bar = new LifeBar(document.querySelector('.life-bar'), 100) 
 
-let and = new logicGate(-350, 0, 0, "rgba(0, 0, 255, .3)", "rgba(0, 255, 0, .3)", LOGIC_GATE.AND)
-let or = new logicGate(-350, 0, toRad(90), "rgba(0, 255, 0, .3)", "rgba(0, 0, 255, .3)", LOGIC_GATE.OR)
-var gameObjects = [ and, or, energy_bar, life_bar ]
+let generator = new Generator()
 
+let and = new LogicGate(-350, 0, 0, "rgba(0, 0, 255, .3)", "rgba(0, 255, 0, .3)", LOGIC_GATE.AND)
+let or = new LogicGate(-350, 0, toRad(90), "rgba(0, 255, 0, .3)", "rgba(0, 0, 255, .3)", LOGIC_GATE.OR)
+
+var gameObjects = [ and, or, generator, energy_bar, life_bar ]
+var arrow_keys = [ left_arrow_button, right_arrow_button ]
 var logic_gates = [ and, or ]
 
 
@@ -219,8 +221,89 @@ function circulote() {
   ctx.stroke()
 }
 
+/****** Enemies ******/
+function Generator(){
+  
+  this.life = 100
+  this.r = 40
+  
+  this.angle = 0
+
+  this.position = {
+    x: CENTER,
+    y: CENTER
+  }
+  this.speed = {
+    x: 1,
+    y: -2
+  }
+
+  this.update = function() {
+    this.angle += 1/60
+    this.position.x += this.speed.x
+    this.position.y += this.speed.y
+
+    ctx.lineWidth = 2
+
+    ctx.save();
+
+    ctx.translate(this.position.x, this.position.y)
+
+    ctx.beginPath()
+    ctx.rotate(this.angle + 45); 
+    ctx.rect(- this.r / 2, - this.r / 2, this.r, this. r)
+    ctx.fillStyle = "#899"
+    ctx.fill()
+    ctx.stroke()
+    ctx.closePath()
+    
+    ctx.restore()
+
+    ctx.save()
+    ctx.translate(this.position.x, this.position.y)
+    
+    ctx.fillStyle = "rgb(250, 245, 80)"
+    ctx.strokeStyle = "#000"
+    ctx.rotate(this.angle); 
+    ctx.beginPath()
+    ctx.rect(- this.r / 2, - this.r / 2, this.r, this. r)
+    ctx.fill()
+    ctx.stroke()
+    ctx.closePath()
+
+    ctx.restore()
+
+    let dist = Math.sqrt(Math.pow(CENTER - this.position.x, 2) + Math.pow(CENTER - this.position.y, 2))
+    
+    if(dist >= 200 - Math.sqrt(Math.pow(this.r / 2, 2) * 2) ){
+      if(this.position.x > CENTER && this.position.y < CENTER){
+        this.speed.x = randomSpeed()
+        this.speed.y = -randomSpeed()
+      }else if(this.position.x < CENTER && this.position.y < CENTER){
+        this.speed.x = -randomSpeed()
+        this.speed.y = -randomSpeed()
+      }else if(this.position.x < CENTER && this.position.y > CENTER){
+        this.speed.x = -randomSpeed()
+        this.speed.y = randomSpeed()
+      }else if(this.position.x > CENTER && this.position.y > CENTER){
+        this.speed.x = randomSpeed()
+        this.speed.y = randomSpeed()
+      }
+    }
+  }
+
+
+  
+}
+
+function randomSpeed() {
+  return Math.random() * (5 - 3) - 3
+}
+
+
+
 /****** LOGIC GATES ******/
-function logicGate(x, y, angle, colorSup, colorInf, type){
+function LogicGate(x, y, angle, colorSup, colorInf, type){
   this.r = 20
   if(type === 0){
     this.x = x + 10
@@ -246,9 +329,7 @@ function logicGate(x, y, angle, colorSup, colorInf, type){
         
     //And
     if(this.type === 0) {
-
       //Semicircle
-      
       ctx.arc(this.x, this.y, this.r, toRad(90), toRad(270), true)
       ctx.fill()
 
@@ -265,7 +346,6 @@ function logicGate(x, y, angle, colorSup, colorInf, type){
       ctx.beginPath()
       ctx.moveTo(this.x - this.r, this.y - this.r + this.r / 2)
       ctx.lineTo(this.x - this.r * 2, this.y - this.r + this.r / 2)
-      /* ctx.arc(this.x - this.r * 2, this.y - this.r + this.r / 2, this.r/4, 0, 2*Math.PI, true) */
       
       ctx.stroke()
       
@@ -293,7 +373,8 @@ function logicGate(x, y, angle, colorSup, colorInf, type){
       ctx.beginPath()
       ctx.arc(this.x - this.r * 2, this.y + this.r / 2, this.r / 3, 0, toRad(360), true)
       ctx.fillStyle = this.colorInf
-      ctx.fill() 
+      ctx.fill()
+      ctx.closePath()
     }
     //Or
     if( this.type === 1) {
@@ -457,8 +538,6 @@ function checkButtonTouched() {
 }
 
 function checkEvent() {
-  
-  console.log(state_inst)
   if(state_inst <= 4) {
 
     gameScreen.ontouchstart = function(e){    //Touch to start
@@ -470,12 +549,7 @@ function checkEvent() {
     document.onkeypress=function(e){    //press any key to start
       state_inst ++
     }
-
-  } 
-
-  
-
-  
+  }
 }
 
 function checkKeyPressed() {
@@ -507,34 +581,27 @@ function checkKeyPressed() {
   }
 }
 
-
-
-
 let start_game = document.getElementById('start-game')
 let asking = document.getElementById('asking')
 asking.style.display = "none"
 start_game.style.display = "none"
-/* hideNotFound() */
-
-
-
 
 let state_inst = 0
 hideElements()
 
-let state = GAME_STATE.NOTFOUND
+let state = GAME_STATE.RUNNING
 
 //Game Loop//
 let loop = GameLoop({  // create the main game loop
     
   update: function() { // update the game state
-    
     switch(state) {
       case GAME_STATE.NOTFOUND:
         setTimeout(() => {
           asking.style.display = "block"
           setTimeout(() => {
             start_game.style.display = "block"
+
             document.onkeypress=function(e){    //press any key to start
               state = GAME_STATE.INSTRUCTIONS
             }
@@ -558,18 +625,12 @@ let loop = GameLoop({  // create the main game loop
             opacityGame()
             checkEvent()
           }
-          
-          /* if(state_inst === 4) {
-            UnOpacityGame()
-          } */
-        
           break  
 
         case GAME_STATE.RUNNING:
           hideNotFound()
           showElements()
 
-          
           gameObjects.forEach((object) => object.update())
           
           energy_bar.setValue(energy_bar.value - count)
@@ -581,13 +642,14 @@ let loop = GameLoop({  // create the main game loop
           checkButtonPressed()
           checkButtonFlag()
           checkKeyPressed()
-
-
-        
     }
   },
   render: function() { // render the game state
     
+    circulito()
+    circulote()
+    gameObjects.forEach((object) => object.update())
+
     switch(state) {
       case  GAME_STATE.INSTRUCTIONS:
       
@@ -617,9 +679,7 @@ let loop = GameLoop({  // create the main game loop
           break
     }      
 
-    circulito()
-    circulote()
-    gameObjects.forEach((object) => object.update())
+    
     
     
   },
