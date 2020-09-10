@@ -69,6 +69,16 @@ let generator = new Generator()
 let and = new LogicGate(-350, 0, 0, "rgba(0, 0, 255, .3)", "rgba(0, 255, 0, .3)", LOGIC_GATE.AND)
 let or = new LogicGate(-350, 0, toRad(90), "rgba(0, 255, 0, .3)", "rgba(0, 0, 255, .3)", LOGIC_GATE.OR)
 
+let a_in_but = new addInputButtonToContainer("A", "rgba(0, 0, 255, .3)", false, true)
+let s_in_but = new addInputButtonToContainer("S", "rgba(0, 255, 0, .3)", false, true)
+let d_in_but = new addInputButtonToContainer("D", "rgba(0, 255, 0, .3)", false, false)
+let f_in_but = new addInputButtonToContainer("F", "rgba(0, 255, 0, .3)", false, false)
+
+let inputs = [a_in_but, s_in_but, d_in_but, f_in_but ]
+
+inputs.forEach((object) => object.changeActive())
+
+
 var gameObjects = [ and, or, generator, energy_bar, life_bar ]
 var arrow_keys = [ left_arrow_button, right_arrow_button ]
 var logic_gates = [ and, or ]
@@ -80,14 +90,7 @@ function toRad(angle) {
   return angle * Math.PI / 180
 }
 
-let a_in_but = new addInputButtonToContainer("A", "rgba(0, 0, 255, .3)", false, true)
-let s_in_but = new addInputButtonToContainer("S", "rgba(0, 255, 0, .3)", false, true)
-let d_in_but = new addInputButtonToContainer("D", "rgba(0, 255, 0, .3)", false, false)
-let f_in_but = new addInputButtonToContainer("F", "rgba(0, 255, 0, .3)", false, false)
 
-let inputs = [a_in_but, s_in_but, d_in_but, f_in_but ]
-
-inputs.forEach((object) => object.changeActive())
 
 function addInputButtonToContainer (idInput, color, isOn=false, active = true) {
   const container = document.querySelector('.InputButtonContainer')
@@ -157,6 +160,7 @@ function dialog(message) {
   const FONT = 30
   let break_lines = message.split('\n')
   var i=0
+  ctx.beginPath()
   ctx.rect(CENTER / 2, CENTER / 2, CENTER, FONT * (break_lines.length))
   ctx.fillStyle = "rgba(0, 0, 0, .4)"
   ctx.fill()
@@ -169,6 +173,7 @@ function dialog(message) {
   for( i = 0; i < break_lines.length; i++){
     ctx.fillText(break_lines[i], CENTER / 2, CENTER / 2 + FONT * i) 
   }  
+  ctx.closePath()
 }
 
 function showElements() {
@@ -237,6 +242,7 @@ function Generator(){
     x: 1,
     y: -2
   }
+  this.visible = true
 
   this.update = function() {
     this.angle += 1/60
@@ -291,9 +297,6 @@ function Generator(){
       }
     }
   }
-
-
-  
 }
 
 function randomSpeed() {
@@ -301,6 +304,57 @@ function randomSpeed() {
 }
 
 
+function shootLaser(logic_gate){  
+  logic_gate.lasers.push({
+    
+    position: {
+      x: logic_gate.x,
+      y: logic_gate.y
+    },  
+    speed: {
+      x: Math.cos(logic_gate.angle) * 3 / 60,
+      y: Math.sin(logic_gate.angle) * 3 / 60
+    },
+    a: logic_gate.a,
+    type: logic_gate.type
+  })
+}
+
+function drawLasers(logic_gate) {
+  for(var i = 0; i < logic_gate.lasers.length; i++){
+    ctx.fillStyle = "red"
+
+
+    if(logic_gate.type === LOGIC_GATE.AND){
+      for(var i=0; i<logic_gate.lasers.length; i++){
+        if(logic_gate.lasers[i].type === LOGIC_GATE.AND)
+        ctx.save();
+        ctx.translate(CENTER, CENTER);
+        ctx.rotate(logic_gate.angle);
+        
+        
+        ctx.beginPath()
+        ctx.rect(logic_gate.lasers[i].position.x + logic_gate.r * 4 / 2, logic_gate.lasers[i].position.y - logic_gate.r / 7, 300, 10)
+        ctx.fill()
+        ctx.restore()
+        
+      }
+    }
+    
+    if(logic_gate.type === LOGIC_GATE.OR){
+      ctx.fillStyle = "blue"
+      ctx.save();
+      ctx.translate(CENTER, CENTER);
+      ctx.rotate(logic_gate.lasers.a + toRad(45));
+
+      ctx.beginPath()
+      ctx.rect(logic_gate.lasers[i].position.x + logic_gate.r * 5 / 2, logic_gate.lasers[i].position.y - logic_gate.r / 7, 30, 10)
+      ctx.fill()
+      ctx.restore()
+    }
+    
+  }
+}
 
 /****** LOGIC GATES ******/
 function LogicGate(x, y, angle, colorSup, colorInf, type){
@@ -316,6 +370,9 @@ function LogicGate(x, y, angle, colorSup, colorInf, type){
   this.type = type
   this.colorSup = colorSup
   this.colorInf = colorInf
+
+  this.canShoot = true
+  this.lasers = []
 
   this.update = function(){
     ctx.fillStyle = "#899"
@@ -429,7 +486,7 @@ function LogicGate(x, y, angle, colorSup, colorInf, type){
 }
 
 
-
+/******* CHECK EVENTS **********/
 let a_input = false
 let s_input = false
 
@@ -441,7 +498,9 @@ function keyDown(evt) {
       and.colorSup = "rgba(0, 0, 255, 1)"
       or.colorInf = "rgba(0, 0, 255, 1)"
       
+      /* a_in_but = true */
       a_input = true
+
     } else {
       and.colorSup = "rgba(0, 0, 255, .3)"
       or.colorInf = "rgba(0, 0, 255, .3)"
@@ -462,7 +521,27 @@ function keyDown(evt) {
     }
     s_in_but.changeColor()
   }
+
+  
 }
+
+function checkLaser(){
+  //&& (evt.keyCode ===65 || evt.keyCode === 83)
+  if(a_input && s_input && generator.visible ){
+    shootLaser(and)
+    shootLaser(or)
+  }else if(a_input || s_input && generator.visible ){ //&& (evt.keyCode ===65 || evt.keyCode === 83)
+      shootLaser(or)
+      
+      for(var i=0; i<and.lasers.length; i++){
+        if( and.lasers.length >0){
+          and.lasers.splice(i, 1)
+        }
+      }
+  }
+}
+
+
 
 function checkButtonPressed(){
   right_arrow_button.id.onmousedown = function () {
@@ -478,9 +557,6 @@ function checkButtonPressed(){
   left_arrow_button.id.onmouseup = function () {
     left_arrow_button.flag = false
   }
-  
-
-  
 }
 
 function checkButtonFlag() {
@@ -554,13 +630,14 @@ function checkEvent() {
 
 function checkKeyPressed() {
   if(keyPressed('right')){
-    and.angle += toRad(1)
-    or.angle += toRad(1)
+     and.angle += toRad(1)
+    or.angle += toRad(1) 
   }
   if(keyPressed('left')){
     and.angle -= toRad(1)
-    or.angle -= toRad(1)
+    or.angle -= toRad(1) 
   }
+ 
   
   if( a_input === true && s_input === true){
     logic_gates.forEach((object) => {
@@ -643,19 +720,25 @@ let loop = GameLoop({  // create the main game loop
           energy_bar.setValue(energy_bar.value - count)
           count = 0
 
-          document.addEventListener('keydown', keyDown)
+          
 
+          
+          
           checkButtonTouched()
           checkButtonPressed()
-          checkButtonFlag()
+
           checkKeyPressed()
+          checkButtonFlag()
+          document.addEventListener('keydown', keyDown)
+          checkLaser()
+          
     }
   },
   render: function() { // render the game state
     
     circulito()
     circulote()
-    gameObjects.forEach((object) => object.update())
+    
 
     switch(state) {
       case  GAME_STATE.INSTRUCTIONS:
@@ -678,22 +761,20 @@ let loop = GameLoop({  // create the main game loop
             break
           default:
             state = GAME_STATE.RUNNING
+            UnOpacityGame()
         }
           break
 
         case GAME_STATE.RUNNING:
-          UnOpacityGame()
+          
           break
     }      
 
-    
-    
-    
+    gameObjects.forEach((object) => object.update())
+    drawLasers(and)
   },
   fps: 60
 });
-
-
 
 // start the game//
 loop.start();    
