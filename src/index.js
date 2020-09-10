@@ -1,5 +1,6 @@
 import { init, Sprite, initPointer, load, Button, initKeys, keyPressed, GameLoop, getContext, degToRad } from 'kontra';
 import EnergyBar, {LifeBar} from './bars.js'
+import LogicGate from './logicGate'
 
 init();
 let ctx = getContext("2d")
@@ -58,16 +59,13 @@ let right_arrow_button = {
   flag: false
 }
 
-
-
-
 let energy_bar = new EnergyBar(document.querySelector('.energy-bar'), 100)
 let life_bar = new LifeBar(document.querySelector('.life-bar'), 100) 
 
 let generator = new Generator()
 
-let and = new LogicGate(-350, 0, 0, "rgba(0, 0, 255, .3)", "rgba(0, 255, 0, .3)", LOGIC_GATE.AND)
-let or = new LogicGate(-350, 0, degToRad(90), "rgba(0, 255, 0, .3)", "rgba(0, 0, 255, .3)", LOGIC_GATE.OR)
+let and = new LogicGate(-350, 0, 0, "rgba(0, 0, 255, .3)", "rgba(0, 255, 0, .3)", LOGIC_GATE.AND, ctx)
+let or = new LogicGate(-350, 0, degToRad(90), "rgba(0, 255, 0, .3)", "rgba(0, 0, 255, .3)", LOGIC_GATE.OR, ctx)
 
 let a_in_but = new addInputButtonToContainer("A", "rgba(0, 0, 255, .3)", false, true)
 let s_in_but = new addInputButtonToContainer("S", "rgba(0, 255, 0, .3)", false, true)
@@ -82,15 +80,6 @@ inputs.forEach((object) => object.changeActive())
 var gameObjects = [ and, or, generator, energy_bar, life_bar ]
 var arrow_keys = [ left_arrow_button, right_arrow_button ]
 var logic_gates = [ and, or ]
-
-
-
-/****** FUNCTIONS *///////////
-function degToRad(angle) {
-  return angle * Math.PI / 180
-}
-
-
 
 function addInputButtonToContainer (idInput, color, isOn=false, active = true) {
   const container = document.querySelector('.InputButtonContainer')
@@ -356,134 +345,6 @@ function drawLasers(logic_gate) {
   }
 }
 
-/****** LOGIC GATES ******/
-function LogicGate(x, y, angle, colorSup, colorInf, type){
-  this.r = 20
-  if(type === 0){
-    this.x = x + 10
-  }else {
-    this.x = x + 2
-  }
-  
-  this.y = y
-  this.angle = angle
-  this.type = type
-  this.colorSup = colorSup
-  this.colorInf = colorInf
-
-  this.canShoot = true
-  this.lasers = []
-
-  this.update = function(){
-    ctx.fillStyle = "#899"
-    ctx.strokeStyle = "#000"
-    ctx.lineWidth = 3
-    ctx.save();
-    ctx.translate(CENTER, CENTER);
-    ctx.rotate(this.angle);
-
-    ctx.beginPath()
-        
-    //And
-    if(this.type === 0) {
-      //Semicircle
-      ctx.arc(this.x, this.y, this.r, degToRad(90), degToRad(270), true)
-      ctx.fill()
-
-      //Rectangle
-      ctx.moveTo(this.x, this.y -  this.r)
-      ctx.lineTo(this.x - this.r, this.y - this.r)
-      ctx.lineTo(this.x - this.r, this.y + this.r)
-      ctx.lineTo(this.x, this.y + this.r)
-      ctx.fill()
-      ctx.stroke()
-
-      //Patitas
-      //Patita superior trasera
-      ctx.beginPath()
-      ctx.moveTo(this.x - this.r, this.y - this.r + this.r / 2)
-      ctx.lineTo(this.x - this.r * 2, this.y - this.r + this.r / 2)
-      
-      ctx.stroke()
-      
-      //Patita inferior trasera
-      ctx.beginPath()
-      ctx.moveTo(this.x - this.r, this.y + this.r / 2)
-      ctx.lineTo(this.x - this.r * 2, this.y + this.r / 2)
-      ctx.stroke()
-
-      //Patita delantera
-      ctx.beginPath()
-      ctx.moveTo(this.x + this.r, this.y)
-      ctx.lineTo(this.x + this.r * 2, this.y)
-      ctx.closePath()
-      ctx.stroke()
-      
-      //Entradas
-      //Entrada superior
-      ctx.beginPath()
-      ctx.arc(this.x - this.r * 2, this.y - this.r + this.r / 2, this.r / 3, 0, degToRad(360), true)
-      ctx.fillStyle = this.colorSup
-      ctx.fill() 
-
-      //Entrada inferior
-      ctx.beginPath()
-      ctx.arc(this.x - this.r * 2, this.y + this.r / 2, this.r / 3, 0, degToRad(360), true)
-      ctx.fillStyle = this.colorInf
-      ctx.fill()
-      ctx.closePath()
-    }
-    //Or
-    if( this.type === 1) {
-      //Trazos
-      //curva trasera
-      ctx.arc(this.x - this.r * 2 - Math.sin(degToRad(45)), 
-          this.y, this.r / Math.sin(degToRad(45)), 
-          degToRad(45), -degToRad(45), true)
-
-      /////////////ESTE ES EL BUENO
-      ctx.arcTo(this.x + this.r, this.y - this.r, this.x + this.r * 2, this.y + this.r, this.r*2)
-      ctx.arcTo(this.x + this.r , this.y + this.r, this.x - this.r *2, this.y + this.r, this.r*2)
-      ctx.closePath()
-      
-      ctx.fill()
-      ctx.stroke()
-      
-      //Patita delantera
-      ctx.beginPath()
-      ctx.moveTo(this.x + this.r * 3/2 + 1, this.y + 2)
-      ctx.lineTo(this.x + this.r * 5/2, this.y +2)
-      ctx.stroke()
-
-      //Patita superior trasera
-      ctx.beginPath()
-      ctx.moveTo(this.x - this.r + 7, this.y - this.r + this.r / 2)
-      ctx.lineTo(this.x - this.r * 2, this.y - this.r + this.r / 2)
-      ctx.stroke()
-      
-      //Patita inferior trasera
-      ctx.beginPath()
-      ctx.moveTo(this.x - this.r + 7, this.y + this.r / 2)
-      ctx.lineTo(this.x - this.r * 2, this.y + this.r / 2)
-      ctx.stroke()
-
-      //Entradas
-      //Entrada superior
-      ctx.beginPath()
-      ctx.arc(this.x - this.r * 2, this.y - this.r + this.r / 2, this.r / 3, 0, degToRad(360), true)
-      ctx.fillStyle = this.colorSup
-      ctx.fill() 
-
-      //Entrada inferior
-      ctx.beginPath()
-      ctx.arc(this.x - this.r * 2, this.y + this.r / 2, this.r / 3, 0, degToRad(360), true)
-      ctx.fillStyle = this.colorInf
-      ctx.fill() 
-      
-    }
-    ctx.restore();    
-  }  
-}
 
 
 /******* CHECK EVENTS **********/
