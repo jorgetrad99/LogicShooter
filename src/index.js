@@ -1,6 +1,8 @@
 import { init, Sprite, initPointer, load, Button, initKeys, keyPressed, GameLoop, getContext, degToRad } from 'kontra';
+
 import EnergyBar, {LifeBar} from './bars.js'
 import LogicGate from './logicGate'
+import Generator from './generator'
 
 init();
 let ctx = getContext("2d")
@@ -62,7 +64,7 @@ let right_arrow_button = {
 let energy_bar = new EnergyBar(document.querySelector('.energy-bar'), 100)
 let life_bar = new LifeBar(document.querySelector('.life-bar'), 100) 
 
-let generator = new Generator()
+let generator = new Generator(ctx)
 
 let and = new LogicGate(-350, 0, 0, "rgba(0, 0, 255, .3)", "rgba(0, 255, 0, .3)", LOGIC_GATE.AND, ctx)
 let or = new LogicGate(-350, 0, degToRad(90), "rgba(0, 255, 0, .3)", "rgba(0, 0, 255, .3)", LOGIC_GATE.OR, ctx)
@@ -215,84 +217,6 @@ function circulote() {
   ctx.stroke()
 }
 
-/****** Enemies ******/
-function Generator(){
-  
-  this.life = 100
-  this.r = 40
-  
-  this.angle = 0
-
-  this.position = {
-    x: CENTER,
-    y: CENTER
-  }
-  this.speed = {
-    x: 1,
-    y: -2
-  }
-  this.visible = true
-
-  this.update = function() {
-    this.angle += 1/60
-    this.position.x += this.speed.x
-    this.position.y += this.speed.y
-
-    ctx.lineWidth = 2
-
-    ctx.save();
-
-    ctx.translate(this.position.x, this.position.y)
-
-    ctx.beginPath()
-    ctx.rotate(this.angle + 45); 
-    ctx.rect(- this.r / 2, - this.r / 2, this.r, this. r)
-    ctx.fillStyle = "#899"
-    ctx.fill()
-    ctx.stroke()
-    ctx.closePath()
-    
-    ctx.restore()
-
-    ctx.save()
-    ctx.translate(this.position.x, this.position.y)
-    
-    ctx.fillStyle = "rgb(250, 245, 80)"
-    ctx.strokeStyle = "#000"
-    ctx.rotate(this.angle); 
-    ctx.beginPath()
-    ctx.rect(- this.r / 2, - this.r / 2, this.r, this. r)
-    ctx.fill()
-    ctx.stroke()
-    ctx.closePath()
-
-    ctx.restore()
-
-    let dist = Math.sqrt(Math.pow(CENTER - this.position.x, 2) + Math.pow(CENTER - this.position.y, 2))
-    
-    if(dist >= 200 - Math.sqrt(Math.pow(this.r / 2, 2) * 2) ){
-      if(this.position.x > CENTER && this.position.y < CENTER){
-        this.speed.x = randomSpeed()
-        this.speed.y = -randomSpeed()
-      }else if(this.position.x < CENTER && this.position.y < CENTER){
-        this.speed.x = -randomSpeed()
-        this.speed.y = -randomSpeed()
-      }else if(this.position.x < CENTER && this.position.y > CENTER){
-        this.speed.x = -randomSpeed()
-        this.speed.y = randomSpeed()
-      }else if(this.position.x > CENTER && this.position.y > CENTER){
-        this.speed.x = randomSpeed()
-        this.speed.y = randomSpeed()
-      }
-    }
-  }
-}
-
-function randomSpeed() {
-  return Math.random() * (5 - 3) - 3
-}
-
-
 function shootLaser(logic_gate){  
   logic_gate.lasers.push({
     
@@ -345,8 +269,6 @@ function drawLasers(logic_gate) {
   }
 }
 
-
-
 /******* CHECK EVENTS **********/
 let a_input = false
 let s_input = false
@@ -354,6 +276,7 @@ let s_input = false
 let count = 0
 
 function keyDown(evt) {
+
   if(evt.keyCode == 65){
     if(a_input === false){
       and.colorSup = "rgba(0, 0, 255, 1)"
@@ -382,8 +305,6 @@ function keyDown(evt) {
     }
     s_in_but.changeColor()
   }
-
-  
 }
 
 function checkLaser(){
@@ -491,7 +412,7 @@ function checkEvent() {
 
 function checkKeyPressed() {
   if(keyPressed('right')){
-     and.angle += degToRadoRad(1)
+     and.angle += degToRad(1)
     or.angle += degToRad(1) 
   }
   if(keyPressed('left')){
