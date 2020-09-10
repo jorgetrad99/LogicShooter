@@ -1,5 +1,5 @@
-import { init, Sprite, initPointer, load, Button, initKeys, keyPressed, GameLoop, getContext } from 'kontra';
-import EnergyBar, {LifeBar} from './Bars.js'
+import { init, Sprite, initPointer, load, Button, initKeys, keyPressed, GameLoop, getContext, degToRad } from 'kontra';
+import EnergyBar, {LifeBar} from './bars.js'
 
 init();
 let ctx = getContext("2d")
@@ -67,7 +67,7 @@ let life_bar = new LifeBar(document.querySelector('.life-bar'), 100)
 let generator = new Generator()
 
 let and = new LogicGate(-350, 0, 0, "rgba(0, 0, 255, .3)", "rgba(0, 255, 0, .3)", LOGIC_GATE.AND)
-let or = new LogicGate(-350, 0, toRad(90), "rgba(0, 255, 0, .3)", "rgba(0, 0, 255, .3)", LOGIC_GATE.OR)
+let or = new LogicGate(-350, 0, degToRad(90), "rgba(0, 255, 0, .3)", "rgba(0, 0, 255, .3)", LOGIC_GATE.OR)
 
 let a_in_but = new addInputButtonToContainer("A", "rgba(0, 0, 255, .3)", false, true)
 let s_in_but = new addInputButtonToContainer("S", "rgba(0, 255, 0, .3)", false, true)
@@ -86,7 +86,7 @@ var logic_gates = [ and, or ]
 
 
 /****** FUNCTIONS *///////////
-function toRad(angle) {
+function degToRad(angle) {
   return angle * Math.PI / 180
 }
 
@@ -345,7 +345,7 @@ function drawLasers(logic_gate) {
       ctx.fillStyle = "blue"
       ctx.save();
       ctx.translate(CENTER, CENTER);
-      ctx.rotate(logic_gate.lasers.a + toRad(45));
+      ctx.rotate(logic_gate.lasers.a + degToRad(45));
 
       ctx.beginPath()
       ctx.rect(logic_gate.lasers[i].position.x + logic_gate.r * 5 / 2, logic_gate.lasers[i].position.y - logic_gate.r / 7, 30, 10)
@@ -387,7 +387,7 @@ function LogicGate(x, y, angle, colorSup, colorInf, type){
     //And
     if(this.type === 0) {
       //Semicircle
-      ctx.arc(this.x, this.y, this.r, toRad(90), toRad(270), true)
+      ctx.arc(this.x, this.y, this.r, degToRad(90), degToRad(270), true)
       ctx.fill()
 
       //Rectangle
@@ -422,13 +422,13 @@ function LogicGate(x, y, angle, colorSup, colorInf, type){
       //Entradas
       //Entrada superior
       ctx.beginPath()
-      ctx.arc(this.x - this.r * 2, this.y - this.r + this.r / 2, this.r / 3, 0, toRad(360), true)
+      ctx.arc(this.x - this.r * 2, this.y - this.r + this.r / 2, this.r / 3, 0, degToRad(360), true)
       ctx.fillStyle = this.colorSup
       ctx.fill() 
 
       //Entrada inferior
       ctx.beginPath()
-      ctx.arc(this.x - this.r * 2, this.y + this.r / 2, this.r / 3, 0, toRad(360), true)
+      ctx.arc(this.x - this.r * 2, this.y + this.r / 2, this.r / 3, 0, degToRad(360), true)
       ctx.fillStyle = this.colorInf
       ctx.fill()
       ctx.closePath()
@@ -437,9 +437,9 @@ function LogicGate(x, y, angle, colorSup, colorInf, type){
     if( this.type === 1) {
       //Trazos
       //curva trasera
-      ctx.arc(this.x - this.r * 2 - Math.sin(toRad(45)), 
-          this.y, this.r / Math.sin(toRad(45)), 
-          toRad(45), -toRad(45), true)
+      ctx.arc(this.x - this.r * 2 - Math.sin(degToRad(45)), 
+          this.y, this.r / Math.sin(degToRad(45)), 
+          degToRad(45), -degToRad(45), true)
 
       /////////////ESTE ES EL BUENO
       ctx.arcTo(this.x + this.r, this.y - this.r, this.x + this.r * 2, this.y + this.r, this.r*2)
@@ -470,13 +470,13 @@ function LogicGate(x, y, angle, colorSup, colorInf, type){
       //Entradas
       //Entrada superior
       ctx.beginPath()
-      ctx.arc(this.x - this.r * 2, this.y - this.r + this.r / 2, this.r / 3, 0, toRad(360), true)
+      ctx.arc(this.x - this.r * 2, this.y - this.r + this.r / 2, this.r / 3, 0, degToRad(360), true)
       ctx.fillStyle = this.colorSup
       ctx.fill() 
 
       //Entrada inferior
       ctx.beginPath()
-      ctx.arc(this.x - this.r * 2, this.y + this.r / 2, this.r / 3, 0, toRad(360), true)
+      ctx.arc(this.x - this.r * 2, this.y + this.r / 2, this.r / 3, 0, degToRad(360), true)
       ctx.fillStyle = this.colorInf
       ctx.fill() 
       
@@ -561,12 +561,12 @@ function checkButtonPressed(){
 
 function checkButtonFlag() {
   if(right_arrow_button.flag === true){
-    and.angle += toRad(1)
-    or.angle += toRad(1)
+    and.angle += degToRad(1)
+    or.angle += degToRad(1)
   }
   if(left_arrow_button.flag === true){
-    and.angle -= toRad(1)
-    or.angle -= toRad(1)
+    and.angle -= degToRad(1)
+    or.angle -= degToRad(1)
   }
 
   a_in_but.id.onmousedown = function() {
@@ -630,12 +630,12 @@ function checkEvent() {
 
 function checkKeyPressed() {
   if(keyPressed('right')){
-     and.angle += toRad(1)
-    or.angle += toRad(1) 
+     and.angle += degToRadoRad(1)
+    or.angle += degToRad(1) 
   }
   if(keyPressed('left')){
-    and.angle -= toRad(1)
-    or.angle -= toRad(1) 
+    and.angle -= degToRad(1)
+    or.angle -= degToRad(1) 
   }
  
   
@@ -720,10 +720,6 @@ let loop = GameLoop({  // create the main game loop
           energy_bar.setValue(energy_bar.value - count)
           count = 0
 
-          
-
-          
-          
           checkButtonTouched()
           checkButtonPressed()
 
@@ -739,7 +735,6 @@ let loop = GameLoop({  // create the main game loop
     circulito()
     circulote()
     
-
     switch(state) {
       case  GAME_STATE.INSTRUCTIONS:
       
