@@ -1,6 +1,9 @@
-import { init, Sprite, initPointer, load, Button, initKeys, keyPressed, GameLoop, getContext } from 'kontra';
 import EnergyBar, {LifeBar} from './Bars.js'
 import Timer from './timer.js';
+import { init, Sprite, initPointer, load, Button, initKeys, keyPressed, GameLoop, getContext, degToRad } from 'kontra';
+
+import LogicGate from './logicGate'
+import Generator from './generator'
 
 init();
 let ctx = getContext("2d")
@@ -59,17 +62,13 @@ let right_arrow_button = {
   flag: false
 }
 
-
-let timer = new Timer(5)
-
-
 let energy_bar = new EnergyBar(document.querySelector('.energy-bar'), 100)
 let life_bar = new LifeBar(document.querySelector('.life-bar'), 100) 
 
-let generator = new Generator()
+let generator = new Generator(ctx)
 
-let and = new LogicGate(-350, 0, 0, "rgba(0, 0, 255, .3)", "rgba(0, 255, 0, .3)", LOGIC_GATE.AND)
-let or = new LogicGate(-350, 0, toRad(90), "rgba(0, 255, 0, .3)", "rgba(0, 0, 255, .3)", LOGIC_GATE.OR)
+let and = new LogicGate(-350, 0, 0, "rgba(0, 0, 255, .3)", "rgba(0, 255, 0, .3)", LOGIC_GATE.AND, ctx)
+let or = new LogicGate(-350, 0, degToRad(90), "rgba(0, 255, 0, .3)", "rgba(0, 0, 255, .3)", LOGIC_GATE.OR, ctx)
 
 let a_in_but = new addInputButtonToContainer("A", "rgba(0, 0, 255, .3)", false, true)
 let s_in_but = new addInputButtonToContainer("S", "rgba(0, 255, 0, .3)", false, true)
@@ -245,84 +244,6 @@ function circulote() {
   ctx.stroke()
 }
 
-/****** Enemies ******/
-function Generator(){
-  
-  this.life = 100
-  this.r = 40
-  
-  this.angle = 0
-
-  this.position = {
-    x: CENTER,
-    y: CENTER
-  }
-  this.speed = {
-    x: 1,
-    y: -2
-  }
-  this.visible = true
-
-  this.update = function() {
-    this.angle += 1/60
-    this.position.x += this.speed.x
-    this.position.y += this.speed.y
-
-    ctx.lineWidth = 2
-
-    ctx.save();
-
-    ctx.translate(this.position.x, this.position.y)
-
-    ctx.beginPath()
-    ctx.rotate(this.angle + 45); 
-    ctx.rect(- this.r / 2, - this.r / 2, this.r, this. r)
-    ctx.fillStyle = "#899"
-    ctx.fill()
-    ctx.stroke()
-    ctx.closePath()
-    
-    ctx.restore()
-
-    ctx.save()
-    ctx.translate(this.position.x, this.position.y)
-    
-    ctx.fillStyle = "rgb(250, 245, 80)"
-    ctx.strokeStyle = "#000"
-    ctx.rotate(this.angle); 
-    ctx.beginPath()
-    ctx.rect(- this.r / 2, - this.r / 2, this.r, this. r)
-    ctx.fill()
-    ctx.stroke()
-    ctx.closePath()
-
-    ctx.restore()
-
-    let dist = Math.sqrt(Math.pow(CENTER - this.position.x, 2) + Math.pow(CENTER - this.position.y, 2))
-    
-    if(dist >= 200 - Math.sqrt(Math.pow(this.r / 2, 2) * 2) ){
-      if(this.position.x > CENTER && this.position.y < CENTER){
-        this.speed.x = randomSpeed()
-        this.speed.y = -randomSpeed()
-      }else if(this.position.x < CENTER && this.position.y < CENTER){
-        this.speed.x = -randomSpeed()
-        this.speed.y = -randomSpeed()
-      }else if(this.position.x < CENTER && this.position.y > CENTER){
-        this.speed.x = -randomSpeed()
-        this.speed.y = randomSpeed()
-      }else if(this.position.x > CENTER && this.position.y > CENTER){
-        this.speed.x = randomSpeed()
-        this.speed.y = randomSpeed()
-      }
-    }
-  }
-}
-
-function randomSpeed() {
-  return Math.random() * (5 - 3) - 3
-}
-
-
 function shootLaser(logic_gate){  
   logic_gate.lasers.push({
     
@@ -364,7 +285,7 @@ function drawLasers(logic_gate) {
       ctx.fillStyle = "blue"
       ctx.save();
       ctx.translate(CENTER, CENTER);
-      ctx.rotate(logic_gate.lasers.a + toRad(45));
+      ctx.rotate(logic_gate.lasers.a + degToRad(45));
 
       ctx.beginPath()
       ctx.rect(logic_gate.lasers[i].position.x + logic_gate.r * 5 / 2, logic_gate.lasers[i].position.y - logic_gate.r / 7, 30, 10)
@@ -375,136 +296,6 @@ function drawLasers(logic_gate) {
   }
 }
 
-/****** LOGIC GATES ******/
-function LogicGate(x, y, angle, colorSup, colorInf, type){
-  this.r = 20
-  if(type === 0){
-    this.x = x + 10
-  }else {
-    this.x = x + 2
-  }
-  
-  this.y = y
-  this.angle = angle
-  this.type = type
-  this.colorSup = colorSup
-  this.colorInf = colorInf
-
-  this.canShoot = true
-  this.lasers = []
-
-  this.update = function(){
-    ctx.fillStyle = "#899"
-    ctx.strokeStyle = "#000"
-    ctx.lineWidth = 3
-    ctx.save();
-    ctx.translate(CENTER, CENTER);
-    ctx.rotate(this.angle);
-
-    ctx.beginPath()
-        
-    //And
-    if(this.type === 0) {
-      //Semicircle
-      ctx.arc(this.x, this.y, this.r, toRad(90), toRad(270), true)
-      ctx.fill()
-
-      //Rectangle
-      ctx.moveTo(this.x, this.y -  this.r)
-      ctx.lineTo(this.x - this.r, this.y - this.r)
-      ctx.lineTo(this.x - this.r, this.y + this.r)
-      ctx.lineTo(this.x, this.y + this.r)
-      ctx.fill()
-      ctx.stroke()
-
-      //Patitas
-      //Patita superior trasera
-      ctx.beginPath()
-      ctx.moveTo(this.x - this.r, this.y - this.r + this.r / 2)
-      ctx.lineTo(this.x - this.r * 2, this.y - this.r + this.r / 2)
-      
-      ctx.stroke()
-      
-      //Patita inferior trasera
-      ctx.beginPath()
-      ctx.moveTo(this.x - this.r, this.y + this.r / 2)
-      ctx.lineTo(this.x - this.r * 2, this.y + this.r / 2)
-      ctx.stroke()
-
-      //Patita delantera
-      ctx.beginPath()
-      ctx.moveTo(this.x + this.r, this.y)
-      ctx.lineTo(this.x + this.r * 2, this.y)
-      ctx.closePath()
-      ctx.stroke()
-      
-      //Entradas
-      //Entrada superior
-      ctx.beginPath()
-      ctx.arc(this.x - this.r * 2, this.y - this.r + this.r / 2, this.r / 3, 0, toRad(360), true)
-      ctx.fillStyle = this.colorSup
-      ctx.fill() 
-
-      //Entrada inferior
-      ctx.beginPath()
-      ctx.arc(this.x - this.r * 2, this.y + this.r / 2, this.r / 3, 0, toRad(360), true)
-      ctx.fillStyle = this.colorInf
-      ctx.fill()
-      ctx.closePath()
-    }
-    //Or
-    if( this.type === 1) {
-      //Trazos
-      //curva trasera
-      ctx.arc(this.x - this.r * 2 - Math.sin(toRad(45)), 
-          this.y, this.r / Math.sin(toRad(45)), 
-          toRad(45), -toRad(45), true)
-
-      /////////////ESTE ES EL BUENO
-      ctx.arcTo(this.x + this.r, this.y - this.r, this.x + this.r * 2, this.y + this.r, this.r*2)
-      ctx.arcTo(this.x + this.r , this.y + this.r, this.x - this.r *2, this.y + this.r, this.r*2)
-      ctx.closePath()
-      
-      ctx.fill()
-      ctx.stroke()
-      
-      //Patita delantera
-      ctx.beginPath()
-      ctx.moveTo(this.x + this.r * 3/2 + 1, this.y + 2)
-      ctx.lineTo(this.x + this.r * 5/2, this.y +2)
-      ctx.stroke()
-
-      //Patita superior trasera
-      ctx.beginPath()
-      ctx.moveTo(this.x - this.r + 7, this.y - this.r + this.r / 2)
-      ctx.lineTo(this.x - this.r * 2, this.y - this.r + this.r / 2)
-      ctx.stroke()
-      
-      //Patita inferior trasera
-      ctx.beginPath()
-      ctx.moveTo(this.x - this.r + 7, this.y + this.r / 2)
-      ctx.lineTo(this.x - this.r * 2, this.y + this.r / 2)
-      ctx.stroke()
-
-      //Entradas
-      //Entrada superior
-      ctx.beginPath()
-      ctx.arc(this.x - this.r * 2, this.y - this.r + this.r / 2, this.r / 3, 0, toRad(360), true)
-      ctx.fillStyle = this.colorSup
-      ctx.fill() 
-
-      //Entrada inferior
-      ctx.beginPath()
-      ctx.arc(this.x - this.r * 2, this.y + this.r / 2, this.r / 3, 0, toRad(360), true)
-      ctx.fillStyle = this.colorInf
-      ctx.fill() 
-      
-    }
-    ctx.restore();    
-  }  
-}
-
-
 /******* CHECK EVENTS **********/
 let a_input = false
 let s_input = false
@@ -512,6 +303,7 @@ let s_input = false
 let count = 0
 
 function keyDown(evt) {
+
   if(evt.keyCode == 65){
     if(a_input === false){
       and.colorSup = "rgba(0, 0, 255, 1)"
@@ -540,8 +332,6 @@ function keyDown(evt) {
     }
     s_in_but.changeColor()
   }
-
-  
 }
 
 function checkLaser(){
@@ -593,12 +383,12 @@ function checkButtonPressed(){
 
 function checkButtonFlag() {
   if(right_arrow_button.flag === true){
-    and.angle += toRad(1)
-    or.angle += toRad(1)
+    and.angle += degToRad(1)
+    or.angle += degToRad(1)
   }
   if(left_arrow_button.flag === true){
-    and.angle -= toRad(1)
-    or.angle -= toRad(1)
+    and.angle -= degToRad(1)
+    or.angle -= degToRad(1)
   }
 
   a_in_but.id.onmousedown = function() {
@@ -661,12 +451,12 @@ function checkEvent() {
 
 function checkKeyPressed() {
   if(keyPressed('right')){
-     and.angle += toRad(1)
-    or.angle += toRad(1) 
+     and.angle += degToRad(1)
+    or.angle += degToRad(1) 
   }
   if(keyPressed('left')){
-    and.angle -= toRad(1)
-    or.angle -= toRad(1) 
+    and.angle -= degToRad(1)
+    or.angle -= degToRad(1) 
   }
  
   
@@ -769,7 +559,6 @@ let loop = GameLoop({  // create the main game loop
     drawLasers(and)
     gameObjects.forEach((object) => object.update())
     
-
     switch(state) {
       case  GAME_STATE.INSTRUCTIONS:
       
