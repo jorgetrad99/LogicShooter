@@ -1,5 +1,6 @@
 import { init, Sprite, initPointer, load, Button, initKeys, keyPressed, GameLoop, getContext } from 'kontra';
 import EnergyBar, {LifeBar} from './Bars.js'
+import Timer from './timer.js';
 
 init();
 let ctx = getContext("2d")
@@ -59,6 +60,7 @@ let right_arrow_button = {
 }
 
 
+let timer = new Timer(5)
 
 
 let energy_bar = new EnergyBar(document.querySelector('.energy-bar'), 100)
@@ -90,6 +92,23 @@ function toRad(angle) {
   return angle * Math.PI / 180
 }
 
+function isCollision(logGate, enemie){
+  let enemieToCenter = distTwoPoints(enemie.position.x, enemie.position.y, CENTER, CENTER)
+  let logGateToCenter = distTwoPoints(logGate.x, logGate.y, CENTER, CENTER)
+  let logGateToEnemie = distTwoPoints(logGate.x, logGate.y, enemie.position.x, enemie.position.y)
+
+  var x = enemieToCenter * Math.sin(Math.acos((Math.pow(enemieToCenter, 2) - Math.pow(logGateToEnemie, 2) + Math.pow(logGateToCenter, 2)) / (2 * enemieToCenter * logGateToCenter)))
+
+  if( x <= enemie.r / 4){
+    return true
+  } else{
+    return false
+  }
+}
+
+function distTwoPoints(x1, y1, x2, y2){
+  return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2))
+}
 
 
 function addInputButtonToContainer (idInput, color, isOn=false, active = true) {
@@ -527,10 +546,17 @@ function keyDown(evt) {
 
 function checkLaser(){
   //&& (evt.keyCode ===65 || evt.keyCode === 83)
+  let count = 0
+  
   if(a_input && s_input && generator.visible ){
     shootLaser(and)
     shootLaser(or)
-  }else if(a_input || s_input && generator.visible ){ //&& (evt.keyCode ===65 || evt.keyCode === 83)
+    if(isCollision(and, generator)){
+      count +=  20/ 60 
+    }
+
+
+  }else if((a_input || s_input) && generator.visible ){ //&& (evt.keyCode ===65 || evt.keyCode === 83)
       shootLaser(or)
       
       for(var i=0; i<and.lasers.length; i++){
@@ -538,10 +564,16 @@ function checkLaser(){
           and.lasers.splice(i, 1)
         }
       }
+  } else {
+    for(var i=0; i<and.lasers.length; i++){
+      if( and.lasers.length >0){
+        and.lasers.splice(i, 1)
+      }
+    }
   }
+
+  life_bar.setValue(life_bar.value - count)
 }
-
-
 
 function checkButtonPressed(){
   right_arrow_button.id.onmousedown = function () {
@@ -615,7 +647,6 @@ function checkButtonTouched() {
 
 function checkEvent() {
   if(state_inst <= 4) {
-
     gameScreen.ontouchstart = function(e){    //Touch to start
       state_inst ++
     }
@@ -664,9 +695,8 @@ asking.style.display = "none"
 start_game.style.display = "none"
 
 let state_inst = 0
-hideElements()
 
-let state = GAME_STATE.NOTFOUND
+let state = GAME_STATE.INSTRUCTIONS
 
 //Game Loop//
 let loop = GameLoop({  // create the main game loop
@@ -720,10 +750,6 @@ let loop = GameLoop({  // create the main game loop
           energy_bar.setValue(energy_bar.value - count)
           count = 0
 
-          
-
-          
-          
           checkButtonTouched()
           checkButtonPressed()
 
@@ -732,12 +758,16 @@ let loop = GameLoop({  // create the main game loop
           document.addEventListener('keydown', keyDown)
           checkLaser()
           
+          timer.update()
+          
     }
   },
   render: function() { // render the game state
     
-    circulito()
+    /* circulito() */
     circulote()
+    drawLasers(and)
+    gameObjects.forEach((object) => object.update())
     
 
     switch(state) {
@@ -745,18 +775,18 @@ let loop = GameLoop({  // create the main game loop
       
         switch (state_inst) {
           case 0:
-            dialog("We've found the error, you'll\nhave to destroy the generator\nand the enemies that came \nfrom it ")
+            dialog("We've found the error, you'll\nhave to destroy the generator\nand the enemies that came \nfrom it.")
             break
           case 1:
-            dialog("The only way to defeat them \nis by supplying energy to the \nlogic gates inputs. This can \nbe done by pressing the \nbuttons in the bottom left and \nif you wanna change the \nposition of the logic gates, \nyou can rotate them by \npressing the buttons in the \nbottom right.\n\nYou can also press the a, s, d, \nf, left arrow and right arrow \nkeys to do the same actions")
+            dialog("The only way to defeat them \nis by supplying energy to the \nlogic gates inputs. This can \nbe done by pressing the \nbuttons in the bottom left and \nif you wanna change the \nposition of the logic gates, \nyou can rotate them by \npressing the buttons in the \nbottom right.\n\nYou can also press the a, s, d, \nf, left arrow and right arrow \nkeys to perform the same \nactions.")
             bottom.style.opacity = "1"
             break
           case 2:
-            dialog("The one on the left is an \nAnd Logic Gate. The TWO \ninputs of it must be supplied \nby energy in order to shoot \nenemies.\n\nThe one on the top is an Or \nLogic Gate. Just ONE of its \ninputs needs to be supplied \nby energy in order to shoot \nenemies")  
+            dialog("The one on the left is an \nAnd Logic Gate. Its TWO \ninputs must be supplied \nwith energy in order to shoot \nenemies.\n\nThe one on the top is an Or \nLogic Gate. Just ONE of its \ninputs needs to be supplied \nwith energy in order to shoot \nenemies.")  
             gameScreen.style.opacity = "1"
             break
           case 3:
-            dialog("Lastly just keep in mind that \nenergy decreases per each \ninput that is activated. Good \nluck c:")
+            dialog("Lastly just keep in mind that \nyou lose energy per each \ninput that is activated. Good \nluck!! c:")
             top.style.opacity = "1"
             break
           default:
@@ -770,8 +800,8 @@ let loop = GameLoop({  // create the main game loop
           break
     }      
 
-    gameObjects.forEach((object) => object.update())
-    drawLasers(and)
+    
+    
   },
   fps: 60
 });
