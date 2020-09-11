@@ -41,10 +41,16 @@
         background-color: rgb(163, 157, 157);
         padding-left: 0; 
         padding-right: 0; 
+
         margin-left: auto; 
         margin-right: auto; 
-        display: flex;
+
+        display: inline-flex;
         align-items: center;
+
+        font-family: Arial;
+        font-size: 25px;
+        font-weight: bold;
         
     }
 
@@ -52,7 +58,7 @@
         position: relative;
         width: 300px;
         height: 40px;
-        margin-right: 70px;
+        /* margin-right: 70px; */
         border: 3px solid #000
     }
 
@@ -70,16 +76,29 @@
         display: flex;
         align-items: center;
         justify-content: center;
+    }
 
-        font-family: Arial;
-        font-size: 25px;
-        font-weight: bold;
+    #countdown {
+        position: relative;
+        width: 200px;
+        height: 40px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        font-size: 40px;
+        color: #fff;
+        
+        text-shadow: -3px 0 black, 0 3px black, 3px 0 black, 0 -3px black;
+        /* text-shadow: 0 0 40px #000; */
+        /* margin-right: 70px; */
+        border: none
     }
     .life-bar {
         position: relative;
         width: 300px;
         height: 40px;
-        margin-left: 70px;
         border: 3px solid #000
     }
 
@@ -97,10 +116,6 @@
         display: flex;
         align-items: center;
         justify-content: center;
-
-        font-family: Arial;
-        font-size: 25px;
-        font-weight: bold;
     }
 
     #gameScreen {
@@ -196,4 +211,4 @@
         background: #fff;
         transform-origin: right;
         transform: rotate(45deg) translate(-6px, 31px);
-    }</style><body><div id="not-found"><h1>404</h1><h4>Page Not Found</h4><p>Upss... There was a problem in the system</p><div id="solve-problem"><p id="asking">Do you wanna try to solve it?</p><h3 id="start-game">Press any key to start</h3></div></div><div class="top"><div class="energy-bar"><div class="energy-bar-value"></div><div class="energy-bar-fill"></div></div><div class="life-bar"><div class="life-bar-value"></div><div class="life-bar-fill"></div></div></div><canvas id="gameScreen" width="800" height="800"><button>Hola</button></canvas><div class="bottom"><div class="InputButtonContainer"></div><div class="RotateButtonContainer"><button id="left-arrow"><div></div></button> <button id="right-arrow"><div></div></button></div></div><script src="js/home.js"></script></body></html>
+    }</style><body><div id="not-found"><h1>404</h1><h4>Page Not Found</h4><p>Oops... There is a system issue</p><div id="solve-problem"><p id="asking">Do you wanna try to solve it?</p><h3 id="start-game">Press any key to start</h3></div></div><div class="top"><div class="energy-bar"><div class="energy-bar-value"></div><div class="energy-bar-fill"></div></div><p id="countdown"></p><div class="life-bar"><div class="life-bar-value"></div><div class="life-bar-fill"></div></div></div><canvas id="gameScreen" width="800" height="800"><button>Hola</button></canvas><div class="bottom"><div class="InputButtonContainer"></div><div class="RotateButtonContainer"><button id="left-arrow"><div></div></button> <button id="right-arrow"><div></div></button></div></div><script src="js/home.js"></script></body></html>
