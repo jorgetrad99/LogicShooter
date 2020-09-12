@@ -1,6 +1,6 @@
 import EnergyBar, {LifeBar} from './Bars.js'
 import Timer from './timer.js';
-import { init, Sprite, initPointer, load, Button, initKeys, keyPressed, GameLoop, getContext, degToRad } from 'kontra';
+import { init, initPointer, initKeys, keyPressed, GameLoop, getContext, degToRad } from 'kontra';
 
 import LogicGate from './logicGate'
 import Generator from './generator'
@@ -18,7 +18,8 @@ const GAME_STATE = {
   MENU: 2,
   GAME_OVER: 3,
   NEW_LEVEL: 4,
-  INSTRUCTIONS: 5
+  INSTRUCTIONS: 5,
+  YOUWIN: 6
 }
 
 const LOGIC_GATE = {
@@ -26,9 +27,14 @@ const LOGIC_GATE = {
   OR: 1
 }
 
-const ENEMIES = {
-  GENERATOR: 0,
-  BUG: 1
+let left_arrow_button = {
+  id: document.getElementById('left-arrow'),
+  flag: false
+}
+
+let right_arrow_button = {
+  id: document.getElementById('right-arrow'),
+  flag: false
 }
 
 let notFound = document.getElementById("not-found")
@@ -36,6 +42,55 @@ let top = document.querySelector(".top")
 let gameScreen = document.getElementById("gameScreen")
 let bottom = document.querySelector(".bottom")
 
+function restartGame() {
+  timer.setValue(1)
+  energy_bar.setValue(8)
+  life_bar.setValue(10)
+  generator.position.x = CENTER
+  generator.position.y = CENTER
+  and.angle = 0
+  or.angle = degToRad(90)
+  and.lasers.length === 1
+  or.lasers.length === 1
+}
+/******* Objects ********/
+let timer = new Timer(16)
+
+let energy_bar = new EnergyBar(document.querySelector('.energy-bar'), 100)
+let life_bar = new LifeBar(document.querySelector('.life-bar'), 100) 
+
+let generator = new Generator(ctx)
+
+let and = new LogicGate(-350, 0, 0, "rgba(0, 0, 255, .3)", "rgba(0, 255, 0, .3)", LOGIC_GATE.AND, ctx)
+let or = new LogicGate(-350, 0, degToRad(180), "rgba(0, 255, 0, .3)", "rgba(0, 0, 255, .3)", LOGIC_GATE.OR, ctx)
+
+let a_in_but = new addInputButtonToContainer("A", "rgba(0, 0, 255, .3)", false, true)
+let s_in_but = new addInputButtonToContainer("S", "rgba(0, 255, 0, .3)", false, true)
+
+/****** Array of Objects ******/
+var gameObjects = [ and, or, energy_bar, life_bar ]
+var arrow_keys = [ left_arrow_button, right_arrow_button ]
+var logic_gates = [ and, or ]
+let inputs = [a_in_but, s_in_but ]
+
+let a_input = false
+let s_input = false
+
+let count = 0
+
+/******* Screen Sections *******/
+let start_game = document.getElementById('start-game')
+let asking = document.getElementById('asking')
+asking.style.display = "none"
+start_game.style.display = "none"
+
+let state_inst = 0
+
+let state = GAME_STATE.NOTFOUND
+
+
+
+/******* MANAGING RESOLUTION OF THE SCREEN ********/
 if(screen.width <= 280){
   document.write("<style>body{zoom:35%}</style>")
 }else if(screen.width > 320 && screen.width <= 375){
@@ -50,55 +105,25 @@ if(screen.width <= 280){
   document.write("<style>body{zoom:92%}</style>")
 }else if(screen.width >= 1000){
   document.write("<style>body{zoom:80%}</style>")
-}          
-
-let left_arrow_button = {
-  id: document.getElementById('left-arrow'),
-  flag: false
-}
-
-let right_arrow_button = {
-  id: document.getElementById('right-arrow'),
-  flag: false
-}
-
-let energy_bar = new EnergyBar(document.querySelector('.energy-bar'), 100)
-let life_bar = new LifeBar(document.querySelector('.life-bar'), 100) 
-
-let generator = new Generator(ctx)
-
-let and = new LogicGate(-350, 0, 0, "rgba(0, 0, 255, .3)", "rgba(0, 255, 0, .3)", LOGIC_GATE.AND, ctx)
-let or = new LogicGate(-350, 0, degToRad(90), "rgba(0, 255, 0, .3)", "rgba(0, 0, 255, .3)", LOGIC_GATE.OR, ctx)
-
-let a_in_but = new addInputButtonToContainer("A", "rgba(0, 0, 255, .3)", false, true)
-let s_in_but = new addInputButtonToContainer("S", "rgba(0, 255, 0, .3)", false, true)
-let d_in_but = new addInputButtonToContainer("D", "rgba(0, 255, 0, .3)", false, false)
-let f_in_but = new addInputButtonToContainer("F", "rgba(0, 255, 0, .3)", false, false)
-
-let inputs = [a_in_but, s_in_but, d_in_but, f_in_but ]
-
-inputs.forEach((object) => object.changeActive())
-
-
-var gameObjects = [ and, or, generator, energy_bar, life_bar ]
-var arrow_keys = [ left_arrow_button, right_arrow_button ]
-var logic_gates = [ and, or ]
-
-
+}   
 
 /****** FUNCTIONS *///////////
-function toRad(angle) {
-  return angle * Math.PI / 180
+
+function shootDownGates(){
+  a_input = false
+  s_input = false
 }
 
 function isCollision(logGate, enemie){
+  console.log("LogicGate: " + logGate.x, " " + logGate.y)
+  console.log("Enemie: " + enemie.position.x, " " + enemie.position.y)
   let enemieToCenter = distTwoPoints(enemie.position.x, enemie.position.y, CENTER, CENTER)
   let logGateToCenter = distTwoPoints(logGate.x, logGate.y, CENTER, CENTER)
   let logGateToEnemie = distTwoPoints(logGate.x, logGate.y, enemie.position.x, enemie.position.y)
 
   var x = enemieToCenter * Math.sin(Math.acos((Math.pow(enemieToCenter, 2) - Math.pow(logGateToEnemie, 2) + Math.pow(logGateToCenter, 2)) / (2 * enemieToCenter * logGateToCenter)))
 
-  if( x <= enemie.r / 4){
+  if( x <= 10){
     return true
   } else{
     return false
@@ -110,12 +135,11 @@ function distTwoPoints(x1, y1, x2, y2){
 }
 
 
-function addInputButtonToContainer (idInput, color, isOn=false, active = true) {
+function addInputButtonToContainer (idInput, color, isOn=false) {
   const container = document.querySelector('.InputButtonContainer')
   this.button = document.createElement('button')
 
   this.color = color
-  this.active = active
 
   this.button.style.backgroundColor = "rgba(92, 92, 92, 1)"
   this.button.style.width = "80px"
@@ -134,13 +158,6 @@ function addInputButtonToContainer (idInput, color, isOn=false, active = true) {
   this.id = document.getElementById(this.button.id)
 
   this.isOn = isOn
-  this.changeActive = function() {
-    if(this.active){
-      this.button.style.display = "block"
-    }else{
-      this.button.style.display = "none"
-    }
-  }
 }
 
 addInputButtonToContainer.prototype.changeColor = function(){
@@ -174,12 +191,12 @@ function UnOpacityGame() {
   bottom.style.opacity = "1"
 }
 
-function dialog(message) {
+function dialog(message, height) {
   const FONT = 30
   let break_lines = message.split('\n')
   var i=0
   ctx.beginPath()
-  ctx.rect(CENTER / 2, CENTER / 2, CENTER, FONT * (break_lines.length))
+  ctx.rect(CENTER / 2, height, CENTER, FONT * (break_lines.length))
   ctx.fillStyle = "rgba(0, 0, 0, .4)"
   ctx.fill()
   ctx.beginPath()
@@ -189,7 +206,7 @@ function dialog(message) {
   ctx.fillStyle = "rgba(255, 255, 255, 1)"
   
   for( i = 0; i < break_lines.length; i++){
-    ctx.fillText(break_lines[i], CENTER / 2, CENTER / 2 + FONT * i) 
+    ctx.fillText(break_lines[i], CENTER / 2, height + FONT * i) 
   }  
   ctx.closePath()
 }
@@ -202,6 +219,10 @@ function showElements() {
 
 function hideNotFound(){
   notFound.style.display = "none"
+}
+
+function showNotFound(){
+  notFound.style.display = "block"
 }
 
 function turnOnColor(color) {
@@ -224,16 +245,6 @@ function turnOffColor(color) {
   return turnedOnColor.join('')
 }
 
-function circulito() {
-  //Circulito
-  ctx.beginPath()
-  /* ctx.arc() */
-  ctx.arc(CENTER, CENTER, 3, 0, Math.PI * 2, true)
-  ctx.fillStyle = "white"
-  ctx.closePath()
-  ctx.fill()
-}
-
 function circulote() {
   //Circulito
   ctx.beginPath()
@@ -246,7 +257,6 @@ function circulote() {
 
 function shootLaser(logic_gate){  
   logic_gate.lasers.push({
-    
     position: {
       x: logic_gate.x,
       y: logic_gate.y
@@ -261,105 +271,120 @@ function shootLaser(logic_gate){
 }
 
 function drawLasers(logic_gate) {
-  for(var i = 0; i < logic_gate.lasers.length; i++){
+  /* for(var i = 0; i < logic_gate.lasers.length; i++){ */
     ctx.fillStyle = "red"
+    switch (logic_gate.type) {
+      case LOGIC_GATE.AND:
+        for(var i=0; i<logic_gate.lasers.length; i++){
+          //if(logic_gate.lasers[i].type === LOGIC_GATE.AND){
+          ctx.save();
+          ctx.translate(CENTER, CENTER);
+          ctx.rotate(logic_gate.angle);
+          
+          
+          ctx.beginPath()
+          ctx.rect(logic_gate.lasers[i].position.x + logic_gate.r * 4 / 2, logic_gate.lasers[i].position.y - logic_gate.r / 7, 300, 10)
+          ctx.fill()
+          ctx.restore()
+        //}
+        /* console.log("entró AND"); */
+          
+        }
+        break
+      
+      case LOGIC_GATE.OR:
+        ctx.fillStyle = "blue"
 
+        for(var i=0; i<logic_gate.lasers.length; i++){
+          /* if(logic_gate.lasers[i].type === LOGIC_GATE.OR){ */
+            ctx.save();
+            ctx.translate(CENTER, CENTER);
+            ctx.rotate(logic_gate.angle);
 
-    if(logic_gate.type === LOGIC_GATE.AND){
-      for(var i=0; i<logic_gate.lasers.length; i++){
-        if(logic_gate.lasers[i].type === LOGIC_GATE.AND)
-        ctx.save();
-        ctx.translate(CENTER, CENTER);
-        ctx.rotate(logic_gate.angle);
-        
-        
-        ctx.beginPath()
-        ctx.rect(logic_gate.lasers[i].position.x + logic_gate.r * 4 / 2, logic_gate.lasers[i].position.y - logic_gate.r / 7, 300, 10)
-        ctx.fill()
-        ctx.restore()
-        
-      }
+            ctx.beginPath()
+            ctx.rect(logic_gate.lasers[i].position.x + logic_gate.r * 4 / 2, logic_gate.lasers[i].position.y - logic_gate.r / 7, 300, 10)
+            ctx.fill()
+            ctx.restore()
+          //}
+        }  
+        break 
     }
-    
-    if(logic_gate.type === LOGIC_GATE.OR){
-      ctx.fillStyle = "blue"
-      ctx.save();
-      ctx.translate(CENTER, CENTER);
-      ctx.rotate(logic_gate.lasers.a + degToRad(45));
-
-      ctx.beginPath()
-      ctx.rect(logic_gate.lasers[i].position.x + logic_gate.r * 5 / 2, logic_gate.lasers[i].position.y - logic_gate.r / 7, 30, 10)
-      ctx.fill()
-      ctx.restore()
-    }
-    
-  }
 }
 
 /******* CHECK EVENTS **********/
-let a_input = false
-let s_input = false
 
-let count = 0
-
-function keyDown(evt) {
-
-  if(evt.keyCode == 65){
-    if(a_input === false){
-      and.colorSup = "rgba(0, 0, 255, 1)"
-      or.colorInf = "rgba(0, 0, 255, 1)"
-      
-      /* a_in_but = true */
-      a_input = true
-
-    } else {
-      and.colorSup = "rgba(0, 0, 255, .3)"
-      or.colorInf = "rgba(0, 0, 255, .3)"
-      a_input = false
-    }
-    a_in_but.changeColor()
-  }
-
-  if(evt.keyCode == 83){
-    if(s_input === false){
-      and.colorInf = "rgba(0, 255, 0, 1)"
-      or.colorSup = "rgba(0, 255, 0, 1)"
-      s_input = true
-    } else {
-      and.colorInf = "rgba(0, 255, 0, .3)"
-      or.colorSup = "rgba(0, 255, 0, .3)"
-      s_input = false
-    }
+function changeColorLogicGateSInput(){
+  if(s_input === false){
+    and.colorInf = "rgba(0, 255, 0, 1)"
+    or.colorSup = "rgba(0, 255, 0, 1)"
+    s_input = true
+    s_in_but.changeColor()
+  } else {
+    and.colorInf = "rgba(0, 255, 0, .3)"
+    or.colorSup = "rgba(0, 255, 0, .3)"
+    s_input = false
     s_in_but.changeColor()
   }
 }
 
+function changeColorLogicGateAInput(){
+  if(a_input === false){
+    and.colorSup = "rgba(0, 0, 255, 1)"
+    or.colorInf = "rgba(0, 0, 255, 1)"
+    
+    /* a_in_but = true */
+    a_input = true
+    a_in_but.changeColor()
+    
+
+  } else {
+    and.colorSup = "rgba(0, 0, 255, .3)"
+    or.colorInf = "rgba(0, 0, 255, .3)"
+    a_input = false
+    a_in_but.changeColor()
+  }
+}
+
+function keyDown(evt) {
+  if(evt.keyCode == 65){
+    changeColorLogicGateAInput()
+  }
+
+  if(evt.keyCode == 83){
+    changeColorLogicGateSInput()
+  }
+}
+
 function checkLaser(){
-  //&& (evt.keyCode ===65 || evt.keyCode === 83)
   let count = 0
   
   if(a_input && s_input && generator.visible ){
-    shootLaser(and)
-    shootLaser(or)
-    if(isCollision(and, generator)){
-      count +=  20/ 60 
+    if(and.lasers.length < 1){
+      shootLaser(and)
     }
-
-
-  }else if((a_input || s_input) && generator.visible ){ //&& (evt.keyCode ===65 || evt.keyCode === 83)
+    if(or.lasers.length < 1){
       shootLaser(or)
-      
-      for(var i=0; i<and.lasers.length; i++){
-        if( and.lasers.length >0){
-          and.lasers.splice(i, 1)
-        }
-      }
-  } else {
-    for(var i=0; i<and.lasers.length; i++){
-      if( and.lasers.length >0){
-        and.lasers.splice(i, 1)
-      }
     }
+    if(isCollision(and, generator)){
+      count +=  25/ 60 
+    }
+    if(isCollision(or, generator)){
+      count += 15/60
+    }
+  }else if((a_input || s_input) && generator.visible ){
+    if(or.lasers.length < 1){
+      shootLaser(or)
+    }
+    if( and.lasers.length === 1){
+      and.lasers.splice(0, 1)
+    }
+  } else {
+      if( and.lasers.length === 1){
+        and.lasers.splice(0, 1)
+      }
+      if( or.lasers.length === 1){
+        or.lasers.splice(0, 1)
+      }
   }
 
   life_bar.setValue(life_bar.value - count)
@@ -381,7 +406,7 @@ function checkButtonPressed(){
   }
 }
 
-function checkButtonFlag() {
+function checkButtonArrowsFlag() {
   if(right_arrow_button.flag === true){
     and.angle += degToRad(1)
     or.angle += degToRad(1)
@@ -390,32 +415,21 @@ function checkButtonFlag() {
     and.angle -= degToRad(1)
     or.angle -= degToRad(1)
   }
+}
 
+/* function checkButtonInput(){
+
+} */
+
+function checkButtonFlag() {
   a_in_but.id.onmousedown = function() {
-    if(a_input === false){
-      and.colorSup = "rgba(0, 0, 255, 1)"
-      or.colorInf = "rgba(0, 0, 255, 1)"
-      
-      a_input = true
-    } else {
-      and.colorSup = "rgba(0, 0, 255, .3)"
-      or.colorInf = "rgba(0, 0, 255, .3)"
-      a_input = false
-    }
-    a_in_but.changeColor()
+    
+    changeColorLogicGateAInput()
   }
 
   s_in_but.id.onmousedown = function(){
-    if(s_input === false){
-      and.colorInf = "rgba(0, 255, 0, 1)"
-      or.colorSup = "rgba(0, 255, 0, 1)"
-      s_input = true
-    } else {
-      and.colorInf = "rgba(0, 255, 0, .3)"
-      or.colorSup = "rgba(0, 255, 0, .3)"
-      s_input = false
-    }
-    s_in_but.changeColor()
+    
+    changeColorLogicGateSInput()
   }
 }
 
@@ -436,7 +450,7 @@ function checkButtonTouched() {
 }
 
 function checkEvent() {
-  if(state_inst <= 4) {
+  if(state_inst < 4 && state === GAME_STATE.INSTRUCTIONS) {
     gameScreen.ontouchstart = function(e){    //Touch to start
       state_inst ++
     }
@@ -445,6 +459,16 @@ function checkEvent() {
     }
     document.onkeypress=function(e){    //press any key to start
       state_inst ++
+    }    
+  } else if(state === GAME_STATE.GAME_OVER || state === GAME_STATE.YOUWIN) {
+    gameScreen.ontouchstart = function(e){    //Touch to start
+      location.reload()
+    }
+    gameScreen.onmousedown = function(e){    //Click to start
+      location.reload()
+    }
+    document.onkeypress=function(e){    //press any key to start
+      location.reload()
     }
   }
 }
@@ -458,8 +482,6 @@ function checkKeyPressed() {
     and.angle -= degToRad(1)
     or.angle -= degToRad(1) 
   }
- 
-  
   if( a_input === true && s_input === true){
     logic_gates.forEach((object) => {
       if(object.type === 0) {   //And
@@ -479,22 +501,20 @@ function checkKeyPressed() {
   }
 }
 
-let start_game = document.getElementById('start-game')
-let asking = document.getElementById('asking')
-asking.style.display = "none"
-start_game.style.display = "none"
 
-let state_inst = 0
-
-let state = GAME_STATE.INSTRUCTIONS
+restartGame()
 
 //Game Loop//
 let loop = GameLoop({  // create the main game loop
     
   update: function() { // update the game state
+    console.log(state);
+    
     switch(state) {
       case GAME_STATE.NOTFOUND:
+        restartGame()
         hideElements()
+        showNotFound()
         setTimeout(() => {
           asking.style.display = "block"
           setTimeout(() => {
@@ -510,85 +530,123 @@ let loop = GameLoop({  // create the main game loop
               state = GAME_STATE.INSTRUCTIONS
             }
           }
-            ,2000)
+            ,0)
         }
-          ,2000)
+          ,0)
+          /* opacityGame() */
+          
+          /* checkLaser() */
         break
+
+      case GAME_STATE.RUNNING:
+        
+        
+
+        gameObjects.forEach((object) => object.update())
+        
+        
+        energy_bar.setValue(energy_bar.value - count)
+        count = 0
+
+        checkButtonTouched()
+        checkButtonPressed()
+
+        checkKeyPressed()
+        checkButtonFlag()
+        checkButtonArrowsFlag()
+        document.addEventListener('keydown', keyDown)
+        checkLaser()
+        timer.update()
+        break
+
       case  GAME_STATE.INSTRUCTIONS:
+        
+        if(state_inst < 4) {
+          opacityGame()
+          hideNotFound()
+          showElements()
+          checkEvent()
+        } else if(state === 4){
+          state = GAME_STATE.RUNNING
+        }
+        break  
+
+      case GAME_STATE.GAME_OVER:
         hideNotFound()
         showElements()
         opacityGame()
-        
-        checkEvent()  
-        break 
-
-        case  GAME_STATE.INSTRUCTIONS:
-          if(state_inst < 4) {
-            hideNotFound()
-            showElements()
-            opacityGame()
-            checkEvent()
-          }
-          break  
-
-        case GAME_STATE.RUNNING:
-          hideNotFound()
-          showElements()
-
-          gameObjects.forEach((object) => object.update())
-          
-          energy_bar.setValue(energy_bar.value - count)
-          count = 0
-
-          checkButtonTouched()
-          checkButtonPressed()
-
-          checkKeyPressed()
-          checkButtonFlag()
-          document.addEventListener('keydown', keyDown)
-          checkLaser()
-          
-          timer.update()
-          
+        checkEvent()
+        break
+      
+      case GAME_STATE.YOUWIN:
+        hideNotFound()
+        showElements()
+        opacityGame()
+        checkEvent()
+        break
     }
+    if((timer.time == 0 && life_bar.value > 0) || energy_bar.value === 0) {
+      state = GAME_STATE.GAME_OVER
+    }
+    if((timer.time > 0 && life_bar.value === 0) && energy_bar.value > 0){
+      state = GAME_STATE.YOUWIN
+    }
+    if(state != GAME_STATE.YOUWIN) {
+      generator.update()
+    }    
   },
   render: function() { // render the game state
-    
-    /* circulito() */
     circulote()
-    drawLasers(and)
     gameObjects.forEach((object) => object.update())
-    
+    if(state != GAME_STATE.YOUWIN) {
+      generator.update()
+    }
+
     switch(state) {
       case  GAME_STATE.INSTRUCTIONS:
-      
+        opacityGame()
+        
         switch (state_inst) {
           case 0:
-            dialog("We've found the error, you'll\nhave to destroy the generator\nand the enemies that came \nfrom it.")
+            dialog("We've found the error, you've\n           got to destroy it!!", CENTER / 2 + 170)
+            UnOpacityGame()
             break
+
           case 1:
-            dialog("The only way to defeat them \nis by supplying energy to the \nlogic gates inputs. This can \nbe done by pressing the \nbuttons in the bottom left and \nif you wanna change the \nposition of the logic gates, \nyou can rotate them by \npressing the buttons in the \nbottom right.\n\nYou can also press the a, s, d, \nf, left arrow and right arrow \nkeys to perform the same \nactions.")
+            dialog("    The only way to defeat it\n  is by supplying with energy\n  the logic gates inputs. This\n    can be done by pressing\n the buttons in the bottom left\n   and if you want to change\n     the position of the logic\n  gates, you can rotate them\n   by pressing the buttons in\n          the bottom right.\n\n You can also press the a, s,\n    left arrow and right arrow\n   keys to perform the same\n                  actions.", CENTER / 2 - 25)
             bottom.style.opacity = "1"
             break
+
           case 2:
-            dialog("The one on the left is an \nAnd Logic Gate. Its TWO \ninputs must be supplied \nwith energy in order to shoot \nenemies.\n\nThe one on the top is an Or \nLogic Gate. Just ONE of its \ninputs needs to be supplied \nwith energy in order to shoot \nenemies.")  
+            dialog("     The one on the left is an\n    And Logic Gate. Its TWO\n inputs must be supplied with\n     energy in order to shoot\n               the error.\n\n  The one on the top is an Or \n  Logic Gate. Just ONE of its \n  inputs needs to be supplied \n      with energy in order to \n            shoot the error.", CENTER / 2 + 35)  
             gameScreen.style.opacity = "1"
             break
+
           case 3:
-            dialog("Lastly just keep in mind that \nyou lose energy per each \ninput that is activated. Good \nluck!! c:")
+            dialog(" Lastly just keep in mind that\n    you lose energy per each\n   input that is activated and\n    try to destroy the error in\n     less than what the timer\n                    says.\n\n             Good luck!! c:", CENTER / 2 + 80)
             top.style.opacity = "1"
             break
+
           default:
-            state = GAME_STATE.RUNNING
             UnOpacityGame()
+            break
         }
-          break
+        break
+      case GAME_STATE.RUNNING:
+        drawLasers(and)
+        drawLasers(or)
+        break
+        
+      case  GAME_STATE.GAME_OVER:
+        dialog("             YOU LOSE :(", CENTER / 2 + 180)
+        break    
 
-        case GAME_STATE.RUNNING:
-          
-          break
-    }      
+      case  GAME_STATE.YOUWIN:
+        dialog("      CONGATULATIONS!!\n\n                YOU WIN!!", CENTER / 2 + 150)
+        break
+    }
 
+    
     
     
   },

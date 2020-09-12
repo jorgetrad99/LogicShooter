@@ -11,7 +11,13 @@
   "keywords": [
     "js13k"
   ],
-  "author": "@Mindsetfps",
+  "author": {
+    "name": "@jorge_trad",
+    "email": "jetradl@gmail.com"
+  }, 
+  "contributors": [
+    "@Mindsetfps"
+  ],
   "license": "ISC",
   "dependencies": {
     "kontra": "^7.1.2"

@@ -1,18 +1,22 @@
 export default class Timer {
+    
     constructor(initvalue = 10) {
-        const MINUTE = 60
-
+        
+        this.MINUTE = 60
         this.initvalue = initvalue   
-        this.time = MINUTE * this.initvalue
+        this.time = this.MINUTE * this.initvalue
         this.valueElem = document.getElementById('countdown')
         this.count=0
         
     }
 
+    setValue(newValue) {
+        this.time = this.MINUTE * newValue
+    }
     update(){
         
         
-        const minutes = Math.floor(this.time / 60)
+        const minutes = Math.floor(this.time / this.MINUTE)
         let seconds = this.time % 60
 
         seconds = seconds < 10 ? '0' + seconds : seconds

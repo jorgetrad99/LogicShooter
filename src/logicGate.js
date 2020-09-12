@@ -9,8 +9,6 @@ export default function LogicGate(x, y, angle, colorSup, colorInf, type, ctx){
     //Take the size of the canvas (800) and divide by 2 = (400)
     var CENTER = ctx.canvas.width / 2
 
-    console.log(CENTER)
-
     this.r = 20
     if(type === 0){
       this.x = x + 10
