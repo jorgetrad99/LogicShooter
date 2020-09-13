@@ -42,17 +42,6 @@ let top = document.querySelector(".top")
 let gameScreen = document.getElementById("gameScreen")
 let bottom = document.querySelector(".bottom")
 
-function restartGame() {
-  timer.setValue(1)
-  energy_bar.setValue(8)
-  life_bar.setValue(10)
-  generator.position.x = CENTER
-  generator.position.y = CENTER
-  and.angle = 0
-  or.angle = degToRad(90)
-  and.lasers.length === 1
-  or.lasers.length === 1
-}
 /******* Objects ********/
 let timer = new Timer(16)
 
@@ -88,8 +77,6 @@ let state_inst = 0
 
 let state = GAME_STATE.NOTFOUND
 
-
-
 /******* MANAGING RESOLUTION OF THE SCREEN ********/
 if(screen.width <= 280){
   document.write("<style>body{zoom:35%}</style>")
@@ -108,22 +95,40 @@ if(screen.width <= 280){
 }   
 
 /****** FUNCTIONS *///////////
-
-function shootDownGates(){
-  a_input = false
-  s_input = false
+function restartGame() {
+  timer.setValue(1.5)
+  energy_bar.setValue(100)
+  life_bar.setValue(100)
+  generator.position.x = CENTER
+  generator.position.y = CENTER
+  and.angle = 0
+  or.angle = degToRad(90)
+  
+  if(a_input && s_input ){
+    changeColorLogicGateAInput()
+    changeColorLogicGateSInput()
+  }else if(a_input && !s_input){
+    changeColorLogicGateAInput()
+  }else if(!a_input && s_input){
+    changeColorLogicGateSInput()
+  }
+  checkLaser()
 }
 
 function isCollision(logGate, enemie){
-  console.log("LogicGate: " + logGate.x, " " + logGate.y)
-  console.log("Enemie: " + enemie.position.x, " " + enemie.position.y)
+  const r = 300
+
+  var y_position = r * Math.sin(logGate.angle)
+  var x_position = y_position / Math.tan(logGate.angle)
+  
   let enemieToCenter = distTwoPoints(enemie.position.x, enemie.position.y, CENTER, CENTER)
-  let logGateToCenter = distTwoPoints(logGate.x, logGate.y, CENTER, CENTER)
-  let logGateToEnemie = distTwoPoints(logGate.x, logGate.y, enemie.position.x, enemie.position.y)
+  let logGateToCenter = distTwoPoints(x_position, y_position, CENTER, CENTER)
+  let logGateToEnemie = distTwoPoints(x_position, y_position, enemie.position.x, enemie.position.y)
 
   var x = enemieToCenter * Math.sin(Math.acos((Math.pow(enemieToCenter, 2) - Math.pow(logGateToEnemie, 2) + Math.pow(logGateToCenter, 2)) / (2 * enemieToCenter * logGateToCenter)))
 
-  if( x <= 10){
+  if( x <= 5){
+    console.log("COLLISION")
     return true
   } else{
     return false
@@ -245,10 +250,9 @@ function turnOffColor(color) {
   return turnedOnColor.join('')
 }
 
-function circulote() {
-  //Circulito
+function bigCirlce() {
+  //Circle
   ctx.beginPath()
-  /* ctx.arc() */
   ctx.arc(CENTER, CENTER, 300, 0, Math.PI * 2, true)
   ctx.strokeStyle = "white"
   ctx.closePath()
@@ -276,19 +280,14 @@ function drawLasers(logic_gate) {
     switch (logic_gate.type) {
       case LOGIC_GATE.AND:
         for(var i=0; i<logic_gate.lasers.length; i++){
-          //if(logic_gate.lasers[i].type === LOGIC_GATE.AND){
           ctx.save();
           ctx.translate(CENTER, CENTER);
           ctx.rotate(logic_gate.angle);
           
-          
           ctx.beginPath()
-          ctx.rect(logic_gate.lasers[i].position.x + logic_gate.r * 4 / 2, logic_gate.lasers[i].position.y - logic_gate.r / 7, 300, 10)
+          ctx.rect(logic_gate.lasers[i].position.x + logic_gate.r * 4 / 2, logic_gate.lasers[i].position.y - logic_gate.r / 7, 305, 10)
           ctx.fill()
-          ctx.restore()
-        //}
-        /* console.log("entró AND"); */
-          
+          ctx.restore()          
         }
         break
       
@@ -302,7 +301,7 @@ function drawLasers(logic_gate) {
             ctx.rotate(logic_gate.angle);
 
             ctx.beginPath()
-            ctx.rect(logic_gate.lasers[i].position.x + logic_gate.r * 4 / 2, logic_gate.lasers[i].position.y - logic_gate.r / 7, 300, 10)
+            ctx.rect(logic_gate.lasers[i].position.x + logic_gate.r * 4 / 2, logic_gate.lasers[i].position.y - logic_gate.r / 7, 305, 10)
             ctx.fill()
             ctx.restore()
           //}
@@ -366,10 +365,10 @@ function checkLaser(){
       shootLaser(or)
     }
     if(isCollision(and, generator)){
-      count +=  25/ 60 
+      count +=  50 / 60 
     }
     if(isCollision(or, generator)){
-      count += 15/60
+      count += 25 / 60
     }
   }else if((a_input || s_input) && generator.visible ){
     if(or.lasers.length < 1){
@@ -377,6 +376,9 @@ function checkLaser(){
     }
     if( and.lasers.length === 1){
       and.lasers.splice(0, 1)
+    }
+    if(isCollision(or, generator)){
+      count += 25/60
     }
   } else {
       if( and.lasers.length === 1){
@@ -417,20 +419,25 @@ function checkButtonArrowsFlag() {
   }
 }
 
-/* function checkButtonInput(){
-
-} */
-
 function checkButtonFlag() {
   a_in_but.id.onmousedown = function() {
-    
     changeColorLogicGateAInput()
   }
 
   s_in_but.id.onmousedown = function(){
-    
     changeColorLogicGateSInput()
   }
+}
+
+function checkButtonFlagTouched(){
+  a_in_but.id.ontouch = function() {
+    changeColorLogicGateAInput()
+  }
+
+  s_in_but.id.ontouch = function(){
+    changeColorLogicGateSInput()
+  }
+  console.log("Entré y lo logré")
 }
 
 function checkButtonTouched() {
@@ -462,13 +469,13 @@ function checkEvent() {
     }    
   } else if(state === GAME_STATE.GAME_OVER || state === GAME_STATE.YOUWIN) {
     gameScreen.ontouchstart = function(e){    //Touch to start
-      location.reload()
+      state = GAME_STATE.RUNNING
     }
     gameScreen.onmousedown = function(e){    //Click to start
-      location.reload()
+      state = GAME_STATE.RUNNING
     }
     document.onkeypress=function(e){    //press any key to start
-      location.reload()
+      state = GAME_STATE.RUNNING
     }
   }
 }
@@ -507,9 +514,7 @@ restartGame()
 //Game Loop//
 let loop = GameLoop({  // create the main game loop
     
-  update: function() { // update the game state
-    console.log(state);
-    
+  update: function() { // update the game state    
     switch(state) {
       case GAME_STATE.NOTFOUND:
         restartGame()
@@ -530,26 +535,21 @@ let loop = GameLoop({  // create the main game loop
               state = GAME_STATE.INSTRUCTIONS
             }
           }
-            ,0)
+            ,2000)
         }
-          ,0)
-          /* opacityGame() */
-          
-          /* checkLaser() */
+          ,2000)
         break
 
       case GAME_STATE.RUNNING:
-        
-        
-
         gameObjects.forEach((object) => object.update())
-        
-        
+
         energy_bar.setValue(energy_bar.value - count)
         count = 0
 
-        checkButtonTouched()
+        
         checkButtonPressed()
+        checkButtonTouched()
+        checkButtonFlagTouched()
 
         checkKeyPressed()
         checkButtonFlag()
@@ -566,23 +566,31 @@ let loop = GameLoop({  // create the main game loop
           hideNotFound()
           showElements()
           checkEvent()
-        } else if(state === 4){
-          state = GAME_STATE.RUNNING
-        }
+        } 
         break  
 
       case GAME_STATE.GAME_OVER:
         hideNotFound()
         showElements()
         opacityGame()
-        checkEvent()
+        setTimeout(() => {
+          UnOpacityGame()
+          state = GAME_STATE.RUNNING
+          restartGame()
+          
+        },2000)
         break
       
       case GAME_STATE.YOUWIN:
         hideNotFound()
         showElements()
         opacityGame()
-        checkEvent()
+        setTimeout(() => {
+          UnOpacityGame()
+          state = GAME_STATE.RUNNING
+          restartGame()
+          
+        },2000)
         break
     }
     if((timer.time == 0 && life_bar.value > 0) || energy_bar.value === 0) {
@@ -596,7 +604,7 @@ let loop = GameLoop({  // create the main game loop
     }    
   },
   render: function() { // render the game state
-    circulote()
+    bigCirlce()
     gameObjects.forEach((object) => object.update())
     if(state != GAME_STATE.YOUWIN) {
       generator.update()
@@ -605,7 +613,6 @@ let loop = GameLoop({  // create the main game loop
     switch(state) {
       case  GAME_STATE.INSTRUCTIONS:
         opacityGame()
-        
         switch (state_inst) {
           case 0:
             dialog("We've found the error, you've\n           got to destroy it!!", CENTER / 2 + 170)
@@ -613,7 +620,7 @@ let loop = GameLoop({  // create the main game loop
             break
 
           case 1:
-            dialog("    The only way to defeat it\n  is by supplying with energy\n  the logic gates inputs. This\n    can be done by pressing\n the buttons in the bottom left\n   and if you want to change\n     the position of the logic\n  gates, you can rotate them\n   by pressing the buttons in\n          the bottom right.\n\n You can also press the a, s,\n    left arrow and right arrow\n   keys to perform the same\n                  actions.", CENTER / 2 - 25)
+            dialog("    The only way to defeat it\n  is by supplying the logic\n  gates inputs with energy.\nThis can be done by pressing\nthe buttons in the bottom left,\n   and if you want to change\n     the position of the logic\n  gates, you can rotate them\n   by pressing the buttons in\n          the bottom right.\n\n You can also press the a, s,\n    left arrow and right arrow\n   keys to perform the same\n                  actions.", CENTER / 2 - 25)
             bottom.style.opacity = "1"
             break
 
@@ -623,32 +630,30 @@ let loop = GameLoop({  // create the main game loop
             break
 
           case 3:
-            dialog(" Lastly just keep in mind that\n    you lose energy per each\n   input that is activated and\n    try to destroy the error in\n     less than what the timer\n                    says.\n\n             Good luck!! c:", CENTER / 2 + 80)
+            dialog(" Lastly, keep in mind that you\n   lose energy every time an\n        input is activated.\n   You also need to mind the\n  timer to avoid running out of\n                    time.\n\n             Good luck!! c:", CENTER / 2 + 80)
             top.style.opacity = "1"
             break
 
           default:
             UnOpacityGame()
+            state = GAME_STATE.RUNNING
             break
         }
         break
+
       case GAME_STATE.RUNNING:
         drawLasers(and)
         drawLasers(or)
         break
         
       case  GAME_STATE.GAME_OVER:
-        dialog("             YOU LOSE :(", CENTER / 2 + 180)
+        dialog("\n             YOU LOSE :(\n", CENTER / 2 + 180)
         break    
 
       case  GAME_STATE.YOUWIN:
-        dialog("      CONGATULATIONS!!\n\n                YOU WIN!!", CENTER / 2 + 150)
+        dialog("\n      CONGATULATIONS!!\n\n                YOU WIN!!\n", CENTER / 2 + 150)
         break
     }
-
-    
-    
-    
   },
   fps: 60
 });
