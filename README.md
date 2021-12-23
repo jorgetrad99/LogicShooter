@@ -1,6 +1,6 @@
 # LogicShooter
 
-##Description
+## Description
 
 Logic Shooter is a game which you have to destroy the error that doesn’t allow the page to be found.
 
